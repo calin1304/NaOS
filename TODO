@@ -1,0 +1,10 @@
+- Add proper build scripts
+- Script for writting floppy. This way we won't need the /dev/loop0 mounting...
+- Implement GDT in C++
+- Methods for real mode <-> protected mode switching
+- Enable interrupts
+
+Drivers:
+
+- Keyboard
+- Disk
