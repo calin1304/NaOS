@@ -19,45 +19,6 @@ bpbSectorsPerTrack		dw 18
 bpbHeadsPerCylinder		dw 2
 bpbHiddenSectors		dw 0
 
-# Write integer to screen
-# dx -> integer to write
-putInt:
-	pusha
-	mov bx, hexTable
-	mov cx, 4
-	.LOOP:
-		mov al, dh
-		shr al, 4
-		xlat
-		mov ah, 0x0e
-		int 0x10
-		shl dx, 4
-		loop .LOOP
-	mov al, 0xa
-	call putChar
-	mov al, 0xd
-	call putChar
-	popa
-	ret
-	
-putChar:
-	mov ah, 0x0e
-	int 0x10
-	ret
-	
-putString:
-	mov ah, 0x0E
-	xor bx, bx
-	xor cx, cx
-	.LOOP:
-		lodsb
-		or al, al
-		jz .EXIT
-		int 0x10
-		jmp .LOOP
-	.EXIT:
-		ret
-
 ; Convert from LBA to CHS
 ; ax -> LBA value
 lbachs:
@@ -86,15 +47,6 @@ resetFloppy:
 	mov  dl, [driveNumber]
 	int 13h
 	jc error
-	ret
-
-printCHS:
-	movzx dx, [sector]
-	call putInt
-	movzx dx, [head]
-	call putInt
-	movzx dx, [cylinder]
-	call putInt
 	ret
 
 ; Read sectors from diskette
