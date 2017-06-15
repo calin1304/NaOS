@@ -46,7 +46,7 @@ resetFloppy:
 	xor ax, ax
 	mov  dl, [driveNumber]
 	int 13h
-	jc error
+	jc exit
 	ret
 
 ; Read sectors from diskette
@@ -68,7 +68,7 @@ readSector:
 		dec cx
 		push cx
 		loop .retry
-		jmp error
+		jmp exit
 	.done:
 		pop cx
 		ret
@@ -181,11 +181,6 @@ exit:
 	cli
 	hlt
 
-error:
-	mov si, errorMsg
-	call putString
-	jmp exit
-
 stage2Filename: db "STAGE2  BIN"
 driveNumber: 	db 0
 
@@ -194,8 +189,6 @@ lba:			dw 0
 sector: 		db 7
 cylinder: 		db 0
 head:			db 1
-errorMsg:		db "Error", 0xa, 0xd, 0
-hexTable:		db "0123456789ABCDEF"
 	
 times 510 - ($-$$) db 0
 db 0x55
