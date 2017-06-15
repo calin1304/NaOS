@@ -103,8 +103,8 @@ public:
     void clear() {
         Color bg_ = bg;
         setBackgroundColor(COLOR_BLACK);
-        for (int i = 0; i < height; ++i) {
-            for (int j = 0; j < width; ++j) {
+        for (unsigned char i = 0; i < height; ++i) {
+            for (unsigned char j = 0; j < width; ++j) {
                 putChar(0);
             }
                 
