@@ -1,3 +1,5 @@
+CPP=g++
+ASM=nasm
 CPPFLAGS=-fno-builtin \
 		 -fno-stack-protector \
 		 -nostartfiles \
@@ -16,30 +18,21 @@ build/floppy.img:
 	dd if=/dev/zero of=build/floppy.img bs=1024 count=1440
 	mkfs.vfat build/floppy.img
 	
-iso: build/stage1.bin build/stage2.bin
-	dd if=/dev/zero of=build/floppy.img bs=1024 count=1440
-	dd if=build/stage1.bin of=build/floppy.img seek=0 count=1 conv=notrunc
-	cp build/floppy.img build/iso
-	cp build/stage2.bin build/iso
-	genisoimage -quiet -V "MYOS" -input-charset iso8859-1 -o build/myos.iso -b floppy.img build/iso/
+# iso: build/stage1.bin build/stage2.bin
+# 	dd if=/dev/zero of=build/floppy.img bs=1024 count=1440
+# 	dd if=build/stage1.bin of=build/floppy.img seek=0 count=1 conv=notrunc
+# 	cp build/floppy.img build/iso
+# 	cp build/stage2.bin build/iso
+# 	genisoimage -quiet -V "MYOS" -input-charset iso8859-1 -o build/myos.iso -b floppy.img build/iso/
 
 build/stage1.bin: src/stage1.asm
-	nasm -o $@ -f bin $< 
+	$(ASM) -o $@ -f bin $< 
 
-build/stage2.bin: obj/stage2.o obj/kmain.o
-	# nasm -o build/stage2.bin -i src/ -f bin src/stage2.asm
-	ld -m elf_i386 -T script.ld obj/stage2.o obj/kmain.o
+build/stage2.bin: .obj/stage2.o .obj/kmain.o
+	ld -m elf_i386 -T script.ld $^
 
-obj/stage2.o: src/stage2.asm
-	nasm -o $@ -f elf32 $<
+.obj/stage2.o: src/stage2.asm
+	$(ASM) -o $@ -f elf32 $<
 
-obj/kmain.o: src/kmain.cpp
-	g++ -c -o $@ $(CPPFLAGS) $<
-
-debug:
-	python3 ./build.py
-	qemu-system-i386 -s -S build/build.img
-
-all:
-	python3 ./build.py
-	qemu-system-i386 -drive format=raw,file=build/build.img
+.obj/kmain.o: src/kmain.cpp
+	$(CPP) -c -o $@ $(CPPFLAGS) $<
