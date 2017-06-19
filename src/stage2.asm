@@ -26,23 +26,6 @@ toc:
    dw toc - gdt_start - 1
    dd gdt_start
 
-; idt_descriptor:
-; 	.m_baseLow 		dw interruptHandlers
-; 	.m_selectior 	dw 0x8
-; 	.m_reserved		db 0
-; 	.m_flags		db 10001110b
-; 	.m_baseHi		dw 0
-
-; idt_ptr:
-; 	.limit	dw $ - idt_descriptor - 1
-; 	.base	dd idt_descriptor
-
-
-; extern interrupt_1
-
-; interruptHandlers:
-; 	call interrupt_1
-
 _start:
 	cli
 	xor ax, ax
@@ -70,8 +53,50 @@ protectedMode:
 	mov es, ax
 	mov fs, ax
 	mov gs, ax
-
-	; lidt [idt_ptr]
 	
 	call main
 	jmp $
+
+global idt_load
+idt_load:
+	mov eax, [esp+4]
+	lidt [eax]
+	sti
+	ret
+
+global gdt_load
+gdt_load:
+	mov eax, [esp+4]
+	lgdt [eax]
+	ret
+
+%macro define_isr_wrapper 1
+global __%1
+__%1:
+	pusha
+	push gs
+	push fs
+	push ds
+	push es
+
+	extern %1
+	call %1
+
+	pop es
+	pop ds
+	pop fs
+	pop gs
+	popa
+	iret
+%endmacro
+
+define_isr_wrapper isr0
+define_isr_wrapper isr4
+define_isr_wrapper isr5
+define_isr_wrapper isr6
+define_isr_wrapper isr7
+define_isr_wrapper isr8
+define_isr_wrapper isr13
+define_isr_wrapper isr_default
+define_isr_wrapper isr_timer
+define_isr_wrapper isr_keyboard

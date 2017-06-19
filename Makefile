@@ -1,13 +1,20 @@
-CPP=g++
+CC=gcc
 ASM=nasm
-CPPFLAGS=-fno-builtin \
+CC_FLAGS=-fno-builtin \
 		 -fno-stack-protector \
 		 -nostartfiles \
 		 -ffreestanding \
 		 -nostdlib \
 		 -m32 \
-		 -Wall -Wextra # -Werror
-	
+		 -Wall -Wextra -I ./include
+
+OBJECT_FILES=.obj/stage2.o \
+				.obj/kmain.o \
+				.obj/console.o \
+				.obj/idt.o \
+				.obj/string.o \
+				.obj/io.o .obj/pic.o .obj/gdt.o .obj/clock.o
+
 floppy: build/floppy.img build/stage1.bin build/stage2.bin
 	mount /dev/loop0 build/floppy_mount
 	cp build/stage2.bin build/floppy_mount
@@ -28,11 +35,18 @@ build/floppy.img:
 build/stage1.bin: src/stage1.asm
 	$(ASM) -o $@ -f bin $< 
 
-build/stage2.bin: .obj/stage2.o .obj/kmain.o
+build/stage2.bin: $(OBJECT_FILES)
 	ld -m elf_i386 -T script.ld $^
 
 .obj/stage2.o: src/stage2.asm
 	$(ASM) -o $@ -f elf32 $<
 
-.obj/kmain.o: src/kmain.cpp
-	$(CPP) -c -o $@ $(CPPFLAGS) $<
+# .obj/kmain.o: src/kmain.c
+	# $(CC) -c -o $@ $(CC_FLAGS) $<
+
+.obj/%.o: src/%.c
+	$(CC) -c -o $@ $(CC_FLAGS) $<
+
+clean:
+	rm .obj/*
+	rm build/stage2.bin

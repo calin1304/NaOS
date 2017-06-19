@@ -1,7 +1,10 @@
 BITS 16
 
-ROOT_OFFSET EQU 0x0200
-FAT_OFFSET EQU 0x1e00
+ROOT_BASE EQU 0x2500
+ROOT_SECTOR_COUNT EQU 13
+FAT_BASE EQU 0x3f00
+FAT_SECTOR_COUNT EQU 9
+KERNEL_OFFSET EQU 0x200
 
 begin: jmp _start
 
@@ -33,14 +36,14 @@ lbachs:
 	mov [cylinder], al
 	ret
 	
-chslba:
-	mov al, [cylinder]
-	mul byte [bpbHeadsPerCylinder]
-	add al, [head]
-	mul byte [bpbSectorsPerTrack]
-	add al, [sector]
-	sub al, 1
-	ret
+; chslba:
+; 	mov al, [cylinder]
+; 	mul byte [bpbHeadsPerCylinder]
+; 	add al, [head]
+; 	mul byte [bpbSectorsPerTrack]
+; 	add al, [sector]
+; 	sub al, 1
+; 	ret
 
 resetFloppy:
 	xor ax, ax
@@ -75,29 +78,22 @@ readSector:
 
 ; bx has index of next entry in FAT
 computeNextCluster:
-	mov si, 0x1200
+	mov si, FAT_BASE
 	xor cx, cx
 	mov ax, 3
-	mul bx
+	mul bl
 	shr ax, 1
 	add si, ax
-	mov dx, bx
-	and dx, 1
+	and bx, 1
 	jz .even
 	.odd:
-		mov cl, [si]
-		add si, 1
-		mov ch, byte[si]
+		mov cx, word[si]
 		shr cx, 4
 		mov [currentCluster], cx
 		jmp .done
 	.even:
-		movzx cx, byte[si]
-		shl cx, 4
-		add si, 1
-		movzx bx, byte[si]
-		or bx, 0x0f
-		add cx, bx
+		mov cx, word[si]
+		and ch, 0x0f
 		mov [currentCluster], cx
 	.done:
 		ret
@@ -111,29 +107,33 @@ _start:
 	mov es, ax
 	
 	; Setting up the stack
-	xor ax, ax
+	xor eax, eax
+	xor ebx, ebx
+	xor ecx, ecx
+	xor edx, edx
+	xor esi, esi
+	xor edi, edi
 	mov ss, ax
 	mov ebp, 0x7c00
 	mov esp, 0x7c00
 	sti
-
 	cld
 
 loadFAT:
 	mov ax, 1
 	call lbachs
-	mov al, 1
-	mov bx, 0x1200
+	mov al, FAT_SECTOR_COUNT
+	mov bx, FAT_BASE
 	call readSector
 
 loadRootDirectory:
 	mov ax, 19
 	call lbachs
-	mov al, 1
-	mov bx, 0x1000
+	mov al, ROOT_SECTOR_COUNT
+	mov bx, ROOT_BASE
 	call readSector
 	
-	mov si, 0x1000
+	mov si, ROOT_BASE
 	findStage2:
 		mov di, stage2Filename
 		mov cx, 11
@@ -147,7 +147,7 @@ loadRootDirectory:
 			mov [currentCluster], ax
 			jmp loadKernel
 
-		.next: ; Should stop at end of root directory
+		.next: ; FIXME: Should stop at end of root directory
 			dec cx
 			add si, cx
 			add si, 0x15
@@ -156,7 +156,7 @@ loadRootDirectory:
 loadKernel:
 	or ax, ax
 	jz exit
-	mov di, 0x200
+	mov di, KERNEL_OFFSET
 
 	.loop:
 		mov ax, [currentCluster]
@@ -166,29 +166,65 @@ loadKernel:
 		mov bx, di
 		call readSector
 	.loop_increment:
+		add di, 0x200
 		mov bx, [currentCluster]
 		call computeNextCluster
 		mov ax, [currentCluster]
-		cmp ax, 0x0FF8
-		jg stage2Loaded
-		add di, 0x200
+		cmp ax, 0x0FFF
+		jge stage2Loaded
 		jmp .loop
 
 stage2Loaded:
+	.set_vga_video_mode:
+		xor ax, ax
+		mov al, 0x13
+		int 0x10
 	jmp 0x0:0x7e00
 
 exit:
 	cli
 	hlt
 
+; debug_reg:
+; 	push ax
+; 	push bx
+; 	push dx
+; 	push cx
+
+; 	mov cx, 4
+; 	mov dx, ax
+; 	mov ah, 0x0e
+; 	.loop:
+; 		mov al, dh
+; 		shl dx, 4
+; 		shr al, 4
+		
+; 		mov bx, hextable
+; 		xlat
+	
+; 		xor bx, bx
+; 		int 0x10
+; 		loop .loop
+
+; 	mov al, ' '
+; 	int 0x10
+
+; 	pop cx
+; 	pop dx
+; 	pop bx
+; 	pop ax
+; 	ret
+	
+
 stage2Filename: db "STAGE2  BIN"
 driveNumber: 	db 0
 
 currentCluster:	dw 0
-lba:			dw 0
 sector: 		db 7
 cylinder: 		db 0
 head:			db 1
+
+; hextable: db "0123456789ABCDEF"
 	
 times 510 - ($-$$) db 0
 db 0x55
