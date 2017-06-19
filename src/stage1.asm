@@ -6,7 +6,7 @@ FAT_BASE EQU 0x3f00
 FAT_SECTOR_COUNT EQU 9
 KERNEL_OFFSET EQU 0x200
 
-begin: jmp _start
+begin: jmp 0x07c0:_start
 
 times 0xb - ($ - begin) db 0
 
