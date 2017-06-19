@@ -6,6 +6,20 @@ FAT_BASE EQU 0x3f00
 FAT_SECTOR_COUNT EQU 9
 KERNEL_OFFSET EQU 0x200
 
+%macro DUMP_REG 1
+	push ax
+	mov ax, %1
+	call debug_reg
+	pop ax
+%endmacro
+
+%macro DUMP_ALL_REGS 0
+	DUMP_REG ax
+	DUMP_REG bx
+	DUMP_REG cx
+	DUMP_REG dx
+%endmacro
+
 begin: jmp 0x07c0:_start
 
 times 0xb - ($ - begin) db 0
@@ -22,29 +36,6 @@ bpbSectorsPerTrack		dw 18
 bpbHeadsPerCylinder		dw 2
 bpbHiddenSectors		dw 0
 
-; Convert from LBA to CHS
-; ax -> LBA value
-lbachs:
-	xor dx, dx
-	div word [bpbSectorsPerTrack]
-	inc dl
-	mov [sector], dl
-	
-	xor dx, dx
-	div word [bpbHeadsPerCylinder]
-	mov [head], dl
-	mov [cylinder], al
-	ret
-	
-; chslba:
-; 	mov al, [cylinder]
-; 	mul byte [bpbHeadsPerCylinder]
-; 	add al, [head]
-; 	mul byte [bpbSectorsPerTrack]
-; 	add al, [sector]
-; 	sub al, 1
-; 	ret
-
 resetFloppy:
 	xor ax, ax
 	mov  dl, [driveNumber]
@@ -52,29 +43,18 @@ resetFloppy:
 	jc exit
 	ret
 
-; Read sectors from diskette
-; al -> number of sectors to read
-; bx -> buffer offset from es
 readSector:
-	mov cx, 5
-	push cx
-	.retry:
-		mov ah, 02h
-		mov ch, [cylinder]
-		mov cl, [sector]
-		mov dh, [head]
-		mov dl, [driveNumber]
-		int 13h
-		jnc .done
-		call resetFloppy
-		pop cx
-		dec cx
-		push cx
-		loop .retry
-		jmp exit
-	.done:
-		pop cx
-		ret
+	mov [dap_lba], ax 			; LBA address
+	mov [dap_offset], bx		; Output data buffer offset
+	mov [dap_sector_count], cx	; How many sectors to read
+	mov [dap_segment], ds		; Output data buffer segment
+	
+	mov ah, 0x42
+	mov dl, 0x80
+	mov si, DAP
+	int 0x13
+	jc exit
+	ret
 
 ; bx has index of next entry in FAT
 computeNextCluster:
@@ -97,11 +77,20 @@ computeNextCluster:
 		mov [currentCluster], cx
 	.done:
 		ret
+
+DAP:
+	db 0x10
+	db 0
+dap_sector_count	dw 1
+dap_offset			dw 0x1000
+dap_segment			dw 0x07c0
+dap_lba				dq 0
 	
 _start:
+	mov dl, 0x80
+	mov [driveNumber], dl
 	; Setting up data segment registers
 	cli
-	mov [driveNumber], dl
 	mov ax, 0x07c0
 	mov ds, ax
 	mov es, ax
@@ -114,25 +103,31 @@ _start:
 	xor esi, esi
 	xor edi, edi
 	mov ss, ax
-	mov ebp, 0x7c00
-	mov esp, 0x7c00
+	mov ebp, 0x7b00
+	mov esp, 0x7b00
 	sti
 	cld
 
+check_int13_extension_installed:
+	mov ah, 0x41
+	mov bx, 0x55aa
+	mov dl, 0x80
+	int 0x13
+	jc exit
+	
 loadFAT:
 	mov ax, 1
-	call lbachs
-	mov al, FAT_SECTOR_COUNT
 	mov bx, FAT_BASE
+	mov cx, 1
 	call readSector
 
 loadRootDirectory:
 	mov ax, 19
-	call lbachs
-	mov al, ROOT_SECTOR_COUNT
 	mov bx, ROOT_BASE
+	mov cx, 1
 	call readSector
 	
+	mov dx, ROOT_BASE + 13*512
 	mov si, ROOT_BASE
 	findStage2:
 		mov di, stage2Filename
@@ -141,16 +136,17 @@ loadRootDirectory:
 			cmpsb
 			jnz .next
 			loop .loop
-		.computeStage2StartCluster: 
+		.computeStage2StartCluster:			
 			add si, 0xf
 			mov ax, [si]
 			mov [currentCluster], ax
 			jmp loadKernel
-
-		.next: ; FIXME: Should stop at end of root directory
+		.next:
 			dec cx
 			add si, cx
 			add si, 0x15
+			cmp si, dx
+			jg exit
 			jmp findStage2		
 
 loadKernel:
@@ -161,9 +157,8 @@ loadKernel:
 	.loop:
 		mov ax, [currentCluster]
 		add ax, 31
-		call lbachs
-		mov al, 1
 		mov bx, di
+		mov cx, 1
 		call readSector
 	.loop_increment:
 		add di, 0x200
@@ -185,35 +180,24 @@ exit:
 	cli
 	hlt
 
-; debug_reg:
-; 	push ax
-; 	push bx
-; 	push dx
-; 	push cx
-
-; 	mov cx, 4
-; 	mov dx, ax
-; 	mov ah, 0x0e
-; 	.loop:
-; 		mov al, dh
-; 		shl dx, 4
-; 		shr al, 4
-		
-; 		mov bx, hextable
-; 		xlat
-	
-; 		xor bx, bx
-; 		int 0x10
-; 		loop .loop
-
-; 	mov al, ' '
-; 	int 0x10
-
-; 	pop cx
-; 	pop dx
-; 	pop bx
-; 	pop ax
-; 	ret
+debug_reg:
+	pusha
+	mov cx, 4
+	mov dx, ax
+	mov ah, 0x0e
+	.loop:
+		mov al, dh
+		shl dx, 4
+		shr al, 4
+		mov bx, hextable
+		xlat
+		xor bx, bx
+		int 0x10
+		loop .loop
+	mov al, ' '
+	int 0x10
+	popa
+	ret
 	
 
 stage2Filename: db "STAGE2  BIN"
@@ -224,7 +208,7 @@ sector: 		db 7
 cylinder: 		db 0
 head:			db 1
 
-; hextable: db "0123456789ABCDEF"
+hextable: db "0123456789ABCDEF"
 	
 times 510 - ($-$$) db 0
 db 0x55
