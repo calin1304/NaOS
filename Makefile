@@ -13,7 +13,7 @@ OBJECT_FILES=.obj/stage2.o \
 				.obj/console.o \
 				.obj/idt.o \
 				.obj/string.o \
-				.obj/io.o .obj/pic.o .obj/gdt.o .obj/clock.o
+				.obj/io.o .obj/pic.o .obj/gdt.o .obj/clock.o .obj/malloc.o
 
 floppy: build/floppy.img build/stage1.bin build/stage2.bin
 	mount /dev/loop0 build/floppy_mount
