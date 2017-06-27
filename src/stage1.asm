@@ -36,6 +36,44 @@ bpbSectorsPerTrack		dw 18
 bpbHeadsPerCylinder		dw 2
 bpbHiddenSectors		dw 0
 
+checkA20:
+	push bx
+	push si
+	push es
+
+	mov ax, 0xffff
+	mov es, ax
+	mov si, 0x7e07
+	
+	mov ax, [es:si]
+	mov bx, [ds:bootsig]
+	cmp ax, bx
+	jnz .A20Enabled
+	
+	shl bx, 8
+	mov [ds:bootsig], bx
+	mov ax, [es:si]
+	cmp ax, bx
+	jnz .A20Enabled
+	
+	mov ax, 0
+	jmp .return
+	.A20Enabled:
+		mov ax, 1
+	.return:
+	pop es
+	pop si
+	pop bx
+	ret
+
+enableA20: ; Fast A20 gate
+	push ax
+	in al, 0x92
+	or al, 2
+	out 0x92, al
+	pop ax
+	ret
+
 resetFloppy:
 	xor ax, ax
 	mov  dl, [driveNumber]
@@ -170,11 +208,16 @@ loadKernel:
 		jmp .loop
 
 stage2Loaded:
-	.set_vga_video_mode:
-		xor ax, ax
-		mov al, 0x13
-		int 0x10
-	jmp 0x0:0x7e00
+	; .set_vga_video_mode:
+	; 	xor ax, ax
+	; 	mov al, 0x13
+	; 	int 0x10
+	call checkA20
+	cmp ax, 1
+	jz .jumpToKernel
+	call enableA20
+	.jumpToKernel:
+		jmp 0x0:0x7e00
 
 exit:
 	cli
@@ -211,5 +254,4 @@ head:			db 1
 hextable: db "0123456789ABCDEF"
 	
 times 510 - ($-$$) db 0
-db 0x55
-db 0xaa
+bootsig: dw 0xaa55
