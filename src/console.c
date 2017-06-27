@@ -24,10 +24,11 @@ void console_init(Console *this)
 
 void console_update_cursor(Console *this)
 {
-    outb(0x3d4, 14);
-    outb(0x3d5, this->cursorY);
-    outb(0x3d4, 15);
-    outb(0x3d5, this->cursorX);
+    uint16_t position = ((this->cursorY * this->width) + this->cursorX);
+    outb(0x3d4, 0x0f);
+    outb(0x3d5, (uint8_t)(position & 0xff));
+    outb(0x3d4, 0x0e);
+    outb(0x3d5, (uint8_t)((position >> 8) & 0xff));
 }
 
 void console_put_backspace(Console *this)
@@ -126,7 +127,7 @@ void console_printf(Console *this, const char *fmt, ...)
     for (p = fmt; *p != '\0'; ++p) {
         if (*p == '%') {
             char t = *(++p);
-            if (t == 'x') {
+            if (t == 'x' || t == 'p') {
                 console_put_int_hex(this, va_arg(args, uint32_t));
             } else if (t == 's') {
                 console_put_string(this, va_arg(args, const char *));
