@@ -83,13 +83,13 @@ check_int13_extension_installed:
 loadFAT:
 	mov ax, 1
 	mov bx, FAT_BASE
-	mov cx, 1
+	mov cx, FAT_SECTOR_COUNT
 	call readSectorExtended
 
 loadRootDirectory:
 	mov ax, 19
 	mov bx, ROOT_BASE
-	mov cx, 1
+	mov cx, ROOT_SECTOR_COUNT
 	call readSectorExtended
 	
 	mov dx, ROOT_BASE + 13*512
