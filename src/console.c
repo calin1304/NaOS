@@ -113,9 +113,18 @@ void console_clear(Console *this)
 void console_put_int_hex(Console *this, uint32_t val)
 {
     console_put_string(this, "0x");
-    for (unsigned int i = 0; i < 8; ++i) {
-        console_put_char(this, hexTable[(val & 0xf0000000) >> 28]);
+    uint i = 0;
+    while (i < 8 && (val & 0xf0000000) == 0) {
         val <<= 4;
+        i++;
+    }
+    if (!val) {
+        console_put_char(this, '0');
+        return;
+    }
+    for (; i < 8; ++i, val <<= 4) {
+        uint8_t c = hexTable[(val & 0xf0000000) >> 28];
+        console_put_char(this, c);
     }
 }
 
