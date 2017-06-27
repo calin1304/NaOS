@@ -1,25 +1,5 @@
 BITS 16
 
-ROOT_BASE EQU 0x2500
-ROOT_SECTOR_COUNT EQU 13
-FAT_BASE EQU 0x3f00
-FAT_SECTOR_COUNT EQU 9
-KERNEL_OFFSET EQU 0x200
-
-%macro DUMP_REG 1
-	push ax
-	mov ax, %1
-	call debug_reg
-	pop ax
-%endmacro
-
-%macro DUMP_ALL_REGS 0
-	DUMP_REG ax
-	DUMP_REG bx
-	DUMP_REG cx
-	DUMP_REG dx
-%endmacro
-
 begin: jmp 0x07c0:_start
 
 times 0xb - ($ - begin) db 0
@@ -36,63 +16,10 @@ bpbSectorsPerTrack		dw 18
 bpbHeadsPerCylinder		dw 2
 bpbHiddenSectors		dw 0
 
-checkA20:
-	push bx
-	push si
-	push es
-
-	mov ax, 0xffff
-	mov es, ax
-	mov si, 0x7e07
-	
-	mov ax, [es:si]
-	mov bx, [ds:bootsig]
-	cmp ax, bx
-	jnz .A20Enabled
-	
-	shl bx, 8
-	mov [ds:bootsig], bx
-	mov ax, [es:si]
-	cmp ax, bx
-	jnz .A20Enabled
-	
-	mov ax, 0
-	jmp .return
-	.A20Enabled:
-		mov ax, 1
-	.return:
-	pop es
-	pop si
-	pop bx
-	ret
-
-enableA20: ; Fast A20 gate
-	push ax
-	in al, 0x92
-	or al, 2
-	out 0x92, al
-	pop ax
-	ret
-
-resetFloppy:
-	xor ax, ax
-	mov  dl, [driveNumber]
-	int 13h
-	jc exit
-	ret
-
-readSector:
-	mov [dap_lba], ax 			; LBA address
-	mov [dap_offset], bx		; Output data buffer offset
-	mov [dap_sector_count], cx	; How many sectors to read
-	mov [dap_segment], ds		; Output data buffer segment
-	
-	mov ah, 0x42
-	mov dl, 0x80
-	mov si, DAP
-	int 0x13
-	jc exit
-	ret
+%include "defines.asm"
+%include "macros.asm"
+%include "drive.asm"
+%include "a20.asm"
 
 ; bx has index of next entry in FAT
 computeNextCluster:
@@ -157,13 +84,13 @@ loadFAT:
 	mov ax, 1
 	mov bx, FAT_BASE
 	mov cx, 1
-	call readSector
+	call readSectorExtended
 
 loadRootDirectory:
 	mov ax, 19
 	mov bx, ROOT_BASE
 	mov cx, 1
-	call readSector
+	call readSectorExtended
 	
 	mov dx, ROOT_BASE + 13*512
 	mov si, ROOT_BASE
@@ -197,7 +124,7 @@ loadKernel:
 		add ax, 31
 		mov bx, di
 		mov cx, 1
-		call readSector
+		call readSectorExtended
 	.loop_increment:
 		add di, 0x200
 		mov bx, [currentCluster]

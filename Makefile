@@ -32,8 +32,8 @@ build/floppy.img:
 # 	cp build/stage2.bin build/iso
 # 	genisoimage -quiet -V "MYOS" -input-charset iso8859-1 -o build/myos.iso -b floppy.img build/iso/
 
-build/stage1.bin: src/stage1.asm
-	$(ASM) -o $@ -f bin $< 
+build/stage1.bin: src/boot/stage1.asm
+	$(ASM) -o $@ -f bin $< -i src/ -i src/boot/
 
 build/stage2.bin: $(OBJECT_FILES)
 	ld -m elf_i386 -T script.ld $^
