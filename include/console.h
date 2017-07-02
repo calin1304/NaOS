@@ -51,6 +51,7 @@ void console_put_newline(Console *this);
 void console_put_string(Console *this, const char *s);
 void console_put_int_hex(Console *this, uint32_t val);
 void console_printf(Console *this, const char *fmt, ...);
+void console_display_timer(Console *this);
 
 void console_clear(Console *this);
 

@@ -3,6 +3,7 @@
 #include <stdarg.h>
 
 #include "io.h"
+#include "clock.h"
 
 static char hexTable[] = "0123456789ABCDEF";
 
@@ -128,6 +129,23 @@ void console_put_int_hex(Console *this, uint32_t val)
     }
 }
 
+void console_put_int_dec(Console *this, uint32_t val)
+{
+    if (val == 0) {
+        console_put_char(this, '0');
+        return;
+    }
+    char v[10];
+    int i = 0;
+    while (val) {
+        v[i++] = (val%10)+'0';
+        val /= 10;
+    }
+    while (--i >= 0) {
+        console_put_char(this, v[i]);
+    }
+}
+
 void console_printf(Console *this, const char *fmt, ...)
 {
     va_list args;
@@ -138,6 +156,8 @@ void console_printf(Console *this, const char *fmt, ...)
             char t = *(++p);
             if (t == 'x' || t == 'p') {
                 console_put_int_hex(this, va_arg(args, uint32_t));
+            } else if (t == 'd') {
+                console_put_int_dec(this, va_arg(args, uint32_t));
             } else if (t == 's') {
                 console_put_string(this, va_arg(args, const char *));
             } else if (t == 'c') {
@@ -157,4 +177,14 @@ void console_printf(Console *this, const char *fmt, ...)
             console_put_char(this, *p);
         }
     }
+}
+
+void console_display_timer(Console *this)
+{
+    uint x = this->cursorX;
+    uint y = this->cursorY;
+    console_set_cursor_position(this, DEFAULT_CONSOLE_WIDTH/2, 0);
+    console_printf(this, "Seconds: %x", clock.seconds);
+    // console_put_int_hex(this, clock.ticks);
+    console_set_cursor_position(this, x, y);
 }
