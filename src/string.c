@@ -58,3 +58,28 @@ unsigned int strlen(const char *s)
     while (*p) { ++p; }
     return (unsigned int)(p - s);
 }
+
+int strcmp(const char *a, const char *b)
+{
+    while (*a == *b && *a) {
+        ++a;
+        ++b;
+    }
+    if (*a || *b) {
+        return *a < *b ? -1 : 1;
+    }
+    return 0;
+}
+
+int strncmp(const char *a, const char *b, unsigned int n)
+{
+    while (*a == *b && *a && n > 0) {
+        ++a;
+        ++b;
+        --n;
+    }
+    if (n > 0) {
+        return *a < *b ? -1 : 1;
+    }
+    return 0;
+}

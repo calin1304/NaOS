@@ -19,5 +19,7 @@ void string_clear(String *this);
 void memset(void *ptr, uint8_t val, uint32_t sz);
 unsigned int strlen(const char *s);
 void strcpy(char *dst, const char *src);
+int strcmp(const char *a, const char *b);
+int strncmp(const char *a, const char *b, unsigned int n);
 
 #endif
