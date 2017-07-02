@@ -80,6 +80,10 @@ void isr_timer()
 {
     // console_printf(&console, "Timer tick\n");
     clock.ticks += 1;
+    if (clock.ticks % 100 == 0) {
+        clock.seconds += 1;
+    }
+    // console_display_timer(&console);
     pic_ack(PIC1);
 }
 
