@@ -1,0 +1,2 @@
+Welcome to my operating system.
+This is a separate file loaded from disk while in protected mode.
