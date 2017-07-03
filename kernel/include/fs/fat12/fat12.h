@@ -22,8 +22,8 @@ struct FAT12RootEntry{
     uint32_t    filesize;
 } __attribute__((packed));
 
-struct FAT12RootEntry* fat12_find_file_root_entry(const char *filename);
-uint16_t fat12_get_next_cluster(uint16_t currentCluster);
-void fat12_load_file(struct FAT12RootEntry *re, uint16_t *dst);
+struct FAT12RootEntry* fat12_find_file_root_entry(struct FAT12RootEntry *rootDirectory, const char *filename);
+uint16_t fat12_get_next_cluster(uint8_t *fatBase, uint16_t currentCluster);
+void fat12_load_file(uint8_t *fatBase, struct FAT12RootEntry *re, uint16_t *dst);
 
 #endif

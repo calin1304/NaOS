@@ -1,7 +1,8 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
-#include <stdint.h> 
+#include <stdint.h>
+#include <stdarg.h>
 
 #include "defines.h"
 #include "string.h"
@@ -45,12 +46,13 @@ void console_init(Console *this);
 void console_advance_cursor(Console *this);
 void console_set_cursor_position(Console *this, uint x, uint y);
 
-void console_put_char(Console *this, uchar c);
+void console_put_char(Console *this, char c);
 void console_put_backspace(Console *this);
 void console_put_newline(Console *this);
 void console_put_string(Console *this, const char *s);
 void console_put_int_hex(Console *this, uint32_t val);
 void console_printf(Console *this, const char *fmt, ...);
+void console_vprintf(Console *this, const char *fmt, va_list args);
 void console_display_timer(Console *this);
 
 void console_clear(Console *this);

@@ -10,7 +10,7 @@ typedef struct Clock_ {
 
 Clock clock;
 
-void clock_init();
+void clock_init(Clock *);
 void sleep(uint32_t milis);
 
 #endif

@@ -1,38 +1,27 @@
-CC=gcc
-ASM=nasm
-CFLAGS=-fno-builtin \
-		 -fno-stack-protector \
-		 -nostartfiles \
-		 -ffreestanding \
-		 -nostdlib \
-		 -m32 \
-		 -Wall -Wextra -I include
-
-OBJECTS=.obj/stage2.o \
-		.obj/kmain.o \
-		.obj/console.o \
-		.obj/idt.o \
-		.obj/string.o \
-		.obj/io.o .obj/pic.o .obj/gdt.o .obj/clock.o .obj/malloc.o .obj/ata.o .obj/fat12.o
-TARGET=kernel
+CFLAGS := $(CFLAGS) -I./include
+SRCDIR := .
+BUILDDIR := .obj
+SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
+OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:%.c=%.o))
+LIBS := -lc
+TARGET := kernel
 
 .PHONY: all
 all: $(TARGET)
+	echo $(LDFLAGS)
 
-$(TARGET): $(OBJECTS)
-	ld -m elf_i386 -T script.ld $^	
+$(TARGET): $(OBJECTS) $(BUILDDIR)/stage2.o
+	ld -m elf_i386 -T script.ld $(LDFLAGS) $^ $(LIBS)
 
-.obj/stage2.o: src/stage2.asm .obj
+$(BUILDDIR)/stage2.o: $(SRCDIR)/stage2.asm
+	@mkdir -p $(dir $@)
 	$(ASM) -o $@ -f elf32 $<
 
-.obj/%.o: src/%.c .obj
+$(BUILDDIR)/%.o: $(SRCDIR)/%.c
+	@mkdir -p $(dir $@)
 	$(CC) -c -o $@ $(CFLAGS) $<
-
-.obj:
-	mkdir $@
 
 .PHONY: clean
 clean:
-	rm -f .obj/*
-	rmdir .obj
+	rm -f $(OBJECTS)
 	rm -f $(TARGET)

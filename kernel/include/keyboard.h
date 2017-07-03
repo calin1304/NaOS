@@ -45,7 +45,8 @@ unsigned char keyboardUS[128] =
 
 
 typedef struct Keyboard_ {
-    String buffer;
+    // String buffer;
+    char buffer[256];
 } Keyboard;
 
 Keyboard keyboard;

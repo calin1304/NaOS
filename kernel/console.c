@@ -1,7 +1,5 @@
 #include "console.h"
 
-#include <stdarg.h>
-
 #include "io.h"
 #include "clock.h"
 
@@ -67,7 +65,7 @@ void console_advance_cursor(Console *this)
     console_update_cursor(this);
 }
 
-void console_put_char(Console *this, uchar c)
+void console_put_char(Console *this, char c)
 {
     if (c == '\n') {
         console_put_newline(this);
@@ -150,6 +148,12 @@ void console_printf(Console *this, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
+    console_vprintf(this, fmt, args);
+    va_end(args);
+}
+
+void console_vprintf(Console *this, const char *fmt, va_list args)
+{
     const char *p;
     for (p = fmt; *p != '\0'; ++p) {
         if (*p == '%') {
