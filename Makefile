@@ -14,17 +14,19 @@ OBJECT_FILES=.obj/stage2.o \
 				.obj/idt.o \
 				.obj/string.o \
 				.obj/io.o .obj/pic.o .obj/gdt.o .obj/clock.o .obj/malloc.o .obj/ata.o .obj/fat12.o
+BOOTLOADER=bootloader/bootloader
+KERNEL=kernel/kernel
 
-floppy: bootloader kernel build/floppy.img
+.PHONY: all
+all: floppy bootloader kernel
 	mount /dev/loop0 build/floppy_mount
-	cp kernel/kernel build/floppy_mount
+	cp $(KERNEL) build/floppy_mount
 	cp res/welcome.txt build/floppy_mount
 	umount /dev/loop0
-	dd if=bootloader/bootloader of=build/floppy.img seek=0 count=1 conv=notrunc
+	dd if=$(BOOTLOADER) of=build/floppy.img seek=0 count=1 conv=notrunc
 
-build/floppy.img:
-	dd if=/dev/zero of=build/floppy.img bs=1024 count=1440
-	mkfs.vfat build/floppy.img
+.PHONY: floppy
+floppy: build/floppy.img
 
 .PHONY: bootloader
 bootloader:
@@ -38,3 +40,7 @@ kernel:
 clean:
 	$(MAKE) -C bootloader clean
 	$(MAKE) -C kernel clean
+
+build/floppy.img:
+	dd if=/dev/zero of=build/floppy.img bs=1024 count=1440
+	mkfs.vfat build/floppy.img
