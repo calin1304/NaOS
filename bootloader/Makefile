@@ -7,4 +7,4 @@ $(TARGET):
 
 .PHONY: clean
 clean:
-	rm $(TARGET)
+	rm -f $(TARGET)

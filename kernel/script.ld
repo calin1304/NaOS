@@ -1,6 +1,6 @@
 ENTRY(_start);
 OUTPUT_FORMAT(binary);
-OUTPUT(build/stage2.bin);
+OUTPUT(kernel);
 
 SECTIONS {
     .text 0x7e00 : {

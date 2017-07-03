@@ -170,7 +170,7 @@ debug_reg:
 	ret
 	
 
-stage2Filename: db "STAGE2  BIN"
+stage2Filename: db "KERNEL     "
 driveNumber: 	db 0
 
 currentCluster:	dw 0
