@@ -13,11 +13,12 @@ OBJECT_FILES=.obj/stage2.o \
 				.obj/console.o \
 				.obj/idt.o \
 				.obj/string.o \
-				.obj/io.o .obj/pic.o .obj/gdt.o .obj/clock.o .obj/malloc.o .obj/ata.o
+				.obj/io.o .obj/pic.o .obj/gdt.o .obj/clock.o .obj/malloc.o .obj/ata.o .obj/fat12.o
 
 floppy: build/floppy.img build/stage1.bin build/stage2.bin
 	mount /dev/loop0 build/floppy_mount
 	cp build/stage2.bin build/floppy_mount
+	cp res/welcome.txt build/floppy_mount
 	umount /dev/loop0
 	dd if=build/stage1.bin of=build/floppy.img seek=0 count=1 conv=notrunc
 

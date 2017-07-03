@@ -8,6 +8,8 @@
 #include "pic.h"
 #include "clock.h"
 #include "malloc.h"
+#include "fat12.h"
+#include "ata.h"
 
 extern Console console;
 extern Clock clock;
@@ -31,9 +33,33 @@ void main(void)
     console_printf(&console, "[%x] Kernel is running\n", clock.ticks);
 
     heap_initialize();
-    int *a = (int*)malloc(sizeof(int) * 100);
-    int *b = (int*)malloc(sizeof(int));
-    console_printf(&console, "Addr: %p %p\n", a, b);
+    console_printf(&console, "[#] Heap initialized\n");
+
+    uint16_t count = 1193180 / 100;
+    outb(0x43, 0x36);
+    outb(0x40, count & 0xffff);
+    outb(0x40, count >> 8);
+
+    struct FAT12RootEntry *root = (struct FAT12RootEntry *)0x1000;
+    uint8_t *fat = (uint8_t*)0x2500;
+    
+    ata_read_lba(19, 1, (uint16_t*)root);
+    console_printf(&console, "[#] First sector of Root directory loaded at %x\n", root);
+    ata_read_lba(1, 1, (uint16_t*)fat);
+    console_printf(&console, "[#] First sector of FAT loaded at %x\n", fat);
+
+    struct FAT12RootEntry *f = fat12_find_file_root_entry("WELCOME ");
+    if (!f) {
+        console_printf(&console, "Welcome message not found\n");
+    } else {
+        uint16_t *dst = 0x3000;
+        fat12_load_file(f, dst);
+        uint8_t *s = (uint8_t*)dst;
+        for (int i = 0; i < f->filesize; ++i) {
+            console_printf(&console, "%c", s[i]);
+        }
+    }
+    console_printf(&console, "\nKernel end\n");
     
     // int n = 200;
     // int m = 320;
