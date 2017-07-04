@@ -1,8 +1,6 @@
 #ifndef KEYBOARD_H
 #define KEYBOARD_H
 
-#include "string.h"
-
 unsigned char keyboardUS[128] =
 {
     0,  27, '1', '2', '3', '4', '5', '6', '7', '8',	/* 9 */
