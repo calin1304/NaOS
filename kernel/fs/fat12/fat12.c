@@ -8,7 +8,7 @@ const unsigned int ROOT_ENTRIES_COUNT = 224;
 
 struct FAT12RootEntry* fat12_find_file_root_entry(struct FAT12RootEntry *rootDirectory, const char *filename)
 {
-    for (int i = 0; i < ROOT_ENTRIES_COUNT; ++i) {
+    for (unsigned int i = 0; i < ROOT_ENTRIES_COUNT; ++i) {
         if (strncmp((const char*)rootDirectory[i].filename, filename, 8) == 0) {
             return rootDirectory+i;
         }
