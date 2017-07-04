@@ -14,7 +14,7 @@ void heap_initialize()
 void* heap_alloc_new_node(unsigned int size)
 {    
     heap.end->allocated = size;
-    heap.end->next = &(heap.end->data) + size;
+    heap.end->next = (struct HeapNode_*)&(heap.end->data) + size;
     HeapNode *ret = heap.end;
     heap.end = heap.end->next;
     heap.size += 1;
