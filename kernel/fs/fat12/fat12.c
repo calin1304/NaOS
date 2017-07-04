@@ -1,7 +1,8 @@
 #include <fs/fat12/fat12.h>
-#include "string.h"
 #include "ata.h"
 #include "clock.h"
+
+#include "libc/include/string.h"
 
 const unsigned int ROOT_ENTRIES_COUNT = 224;
 
