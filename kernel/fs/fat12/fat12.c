@@ -32,7 +32,7 @@ void fat12_load_file(uint8_t *fatBase, struct FAT12RootEntry *re, uint16_t *dst)
 {
     uint16_t cluster = re->firstLogicalCluster;
     while (cluster < 0x0fff) {
-        ata_read_lba(33+cluster, 1, dst);
+        ata_read_lba(31+cluster, 1, dst);
         cluster = fat12_get_next_cluster(fatBase, cluster);
         dst += 256;
     }
