@@ -7,7 +7,7 @@ export CFLAGS := -fno-builtin \
 		 -nostdlib \
 		 -m32 \
 		 -Wall -Wextra -I ${abspath .}
-export LDFLAGS := -L $(abspath "./libc")
+export LDFLAGS := -L $(abspath ./libc)
 
 OBJECT_FILES := .obj/stage2.o \
 				.obj/kmain.o \
