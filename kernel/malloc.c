@@ -2,7 +2,7 @@
 
 Heap heap;
 
-#define HEAP_START 0x2000
+#define HEAP_START 0x00100000
 
 void heap_initialize()
 {
