@@ -126,7 +126,7 @@ loadKernel:
 		add ax, 31
 		mov bx, di
 		mov cx, 1
-		mov dx, ds
+		mov dx, KERNEL_SEGMENT
 		call readSectorExtended
 	.loop_increment:
 		add di, 0x200
@@ -147,7 +147,7 @@ stage2Loaded:
 	jz .jumpToKernel
 	call enableA20
 	.jumpToKernel:
-		jmp 0x0:0x7e00
+		jmp KERNEL_SEGMENT:KERNEL_OFFSET
 
 exit:
 	cli

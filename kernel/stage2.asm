@@ -4,8 +4,7 @@ extern main
 
 global _start
 
-jmp _start
-
+SECTION .data
 gdt_start: 
    dq 0           
          
@@ -14,7 +13,7 @@ gdt_start:
    db 0             
    db 10011010b       
    db 11001111b          
-   db 0             
+   db 0
 
    dw 0xffff          
    dw 0             
@@ -26,6 +25,7 @@ toc:
    dw toc - gdt_start - 1
    dd gdt_start
 
+SECTION .text
 _start:
 	cli
 	xor ax, ax
