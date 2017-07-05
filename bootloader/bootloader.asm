@@ -17,7 +17,6 @@ bpbHeadsPerCylinder		dw 2
 bpbHiddenSectors		dw 0
 
 %include "defines.asm"
-%include "macros.asm"
 %include "drive.asm"
 %include "a20.asm"
 
@@ -151,37 +150,12 @@ stage2Loaded:
 
 exit:
 	cli
-	hlt
-
-debug_reg:
-	pusha
-	mov cx, 4
-	mov dx, ax
-	mov ah, 0x0e
-	.loop:
-		mov al, dh
-		shl dx, 4
-		shr al, 4
-		mov bx, hextable
-		xlat
-		xor bx, bx
-		int 0x10
-		loop .loop
-	mov al, ' '
-	int 0x10
-	popa
-	ret
-	
+	hlt	
 
 stage2Filename: db "KERNEL     "
 driveNumber: 	db 0
 
 currentCluster:	dw 0
-sector: 		db 7
-cylinder: 		db 0
-head:			db 1
 
-hextable: db "0123456789ABCDEF"
-	
 times 510 - ($-$$) db 0
 bootsig: dw 0xaa55
