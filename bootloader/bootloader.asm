@@ -162,7 +162,7 @@ stage2Loaded:
 		mov es, ax
 		mov fs, ax
 		mov gs, ax
-		jmp 0x8:KERNEL_OFFSET
+		jmp 0x8:KERNEL_LONG_ADDR
 
 exit:
 	cli

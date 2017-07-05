@@ -3,7 +3,7 @@ OUTPUT_FORMAT(binary);
 OUTPUT(kernel);
 
 SECTIONS {
-    .text 0x7e00 : {
+    .text 0x10000 : {
         .obj/stage2.o (.text);
         * (.text)
     }
