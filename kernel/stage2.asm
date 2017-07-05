@@ -28,14 +28,6 @@ toc:
 SECTION .text
 _start:
 	cli
-	xor ax, ax
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-	mov ss, ax
-	mov esp, 0x7c00
-	mov ebp, 0x7c00
 	mov esi, gdt_start
 	mov edi, gdt_start
 

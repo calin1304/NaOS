@@ -67,8 +67,8 @@ _start:
 	mov fs, ax
 	mov gs, ax
 	mov ss, ax
-	mov ebp, 0x7b00
-	mov esp, 0x7b00
+	mov ebp, 0x7c00
+	mov esp, 0x7c00
 	sti
 	cld
 
