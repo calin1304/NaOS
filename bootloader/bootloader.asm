@@ -1,6 +1,7 @@
 BITS 16
+ORG 0x7c00
 
-begin: jmp 0x07c0:_start
+begin: jmp 0x0:_start
 
 times 0xb - ($ - begin) db 0
 
@@ -55,17 +56,16 @@ _start:
 	mov [driveNumber], dl
 	; Setting up data segment registers
 	cli
-	mov ax, 0x07c0
-	mov ds, ax
-	mov es, ax
-	
-	; Setting up the stack
 	xor eax, eax
 	xor ebx, ebx
 	xor ecx, ecx
 	xor edx, edx
 	xor esi, esi
 	xor edi, edi
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
 	mov ss, ax
 	mov ebp, 0x7b00
 	mov esp, 0x7b00
