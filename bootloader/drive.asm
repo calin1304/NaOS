@@ -9,7 +9,7 @@ readSectorExtended:
 	mov [dap_lba], ax 			; LBA address
 	mov [dap_offset], bx		; Output data buffer offset
 	mov [dap_sector_count], cx	; How many sectors to read
-	mov [dap_segment], ds		; Output data buffer segment
+	mov [dap_segment], dx		; Output data buffer segment
 	
 	mov ah, 0x42
 	mov dl, 0x80

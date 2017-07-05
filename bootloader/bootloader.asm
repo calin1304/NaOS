@@ -84,12 +84,14 @@ loadFAT:
 	mov ax, 1
 	mov bx, FAT_BASE
 	mov cx, FAT_SECTOR_COUNT
+	mov dx, ds
 	call readSectorExtended
 
 loadRootDirectory:
 	mov ax, 19
 	mov bx, ROOT_BASE
 	mov cx, ROOT_SECTOR_COUNT
+	mov dx, ds
 	call readSectorExtended
 	
 	mov dx, ROOT_BASE + 13*512
@@ -124,6 +126,7 @@ loadKernel:
 		add ax, 31
 		mov bx, di
 		mov cx, 1
+		mov dx, ds
 		call readSectorExtended
 	.loop_increment:
 		add di, 0x200
