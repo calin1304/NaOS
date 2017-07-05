@@ -7,13 +7,13 @@ SECTIONS {
         .obj/stage2.o (.text);
         * (.text)
     }
-    .data : {
-        * (.data)
-    }
-    .rodata : {
+    .rodata BLOCK(4K) : ALIGN(4K) {
         * (.rodata)
     }
-    .bss : {
+    .data BLOCK(4K) : ALIGN(4K) {
+        * (.data)
+    }
+    .bss BLOCK(4K) : ALIGN(4K) {
         * (.bss)
     }
 }
