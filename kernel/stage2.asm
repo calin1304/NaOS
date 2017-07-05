@@ -28,8 +28,6 @@ toc:
 SECTION .text
 _start:
 	cli
-	mov esi, gdt_start
-	mov edi, gdt_start
 
 	lgdt [toc]
 	mov eax, cr0
