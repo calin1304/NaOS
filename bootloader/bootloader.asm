@@ -145,8 +145,24 @@ stage2Loaded:
 	cmp ax, 1
 	jz .jumpToKernel
 	call enableA20
+
 	.jumpToKernel:
-		jmp KERNEL_SEGMENT:KERNEL_OFFSET
+		cli
+		lgdt [toc]
+		mov eax, cr0
+		or eax, 1
+		mov cr0, eax
+		jmp 0x8:(protectedMode)
+
+	BITS 32
+	protectedMode:
+		mov ax, 0x10
+		mov ss, ax
+		mov ds, ax
+		mov es, ax
+		mov fs, ax
+		mov gs, ax
+		jmp 0x8:KERNEL_OFFSET
 
 exit:
 	cli
@@ -156,6 +172,26 @@ stage2Filename: db "KERNEL     "
 driveNumber: 	db 0
 
 currentCluster:	dw 0
+
+gdt_start: 
+   dq 0           
+         
+   dw 0xffff          
+   dw 0          
+   db 0             
+   db 10011010b       
+   db 11001111b          
+   db 0
+
+   dw 0xffff          
+   dw 0             
+   db 0             
+   db 10010010b       
+   db 11001111b       
+   db 0            
+toc: 
+   dw toc - gdt_start - 1
+   dd gdt_start
 
 times 510 - ($-$$) db 0
 bootsig: dw 0xaa55

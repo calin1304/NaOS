@@ -1,49 +1,11 @@
-BITS 16
+BITS 32
 
 extern main
 
 global _start
 
-SECTION .data
-gdt_start: 
-   dq 0           
-         
-   dw 0xffff          
-   dw 0          
-   db 0             
-   db 10011010b       
-   db 11001111b          
-   db 0
-
-   dw 0xffff          
-   dw 0             
-   db 0             
-   db 10010010b       
-   db 11001111b       
-   db 0            
-toc: 
-   dw toc - gdt_start - 1
-   dd gdt_start
-
 SECTION .text
 _start:
-	cli
-
-	lgdt [toc]
-	mov eax, cr0
-	or eax, 1
-	mov cr0, eax
-	jmp 0x8:(protectedMode)
-
-BITS 32
-protectedMode:
-	mov ax, 0x10
-	mov ss, ax
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-	
 	call main
 	jmp $
 
