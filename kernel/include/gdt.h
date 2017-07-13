@@ -13,8 +13,8 @@ enum GDT_ACCESS {
 };
 
 enum GDT_FLAGS {
-    GDT_SIZE        = 0x40,
-    GDT_GRANULARITY = 0x80
+    GDT_SIZE        = 0x4,
+    GDT_GRANULARITY = 0x8
 };
 
 struct GDTEntry {
