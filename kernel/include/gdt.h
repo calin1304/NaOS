@@ -3,6 +3,20 @@
 
 #include <stdint.h>
 
+enum GDT_ACCESS {
+    GDT_ACCESSED    = 0x01,
+    GDT_RW          = 0x02,
+    GDT_DC          = 0x04,
+    GDT_EXECUTABLE  = 0x08,
+    GDT_PRIVILETE   = 0x60,
+    GDT_PRESENT     = 0x80
+};
+
+enum GDT_FLAGS {
+    GDT_SIZE        = 0x40,
+    GDT_GRANULARITY = 0x80
+};
+
 struct GDTEntry {
     uint16_t    limit;
     // uint16_t    base;

@@ -11,7 +11,7 @@ void gdt_entry_init(struct GDTEntry *entry,
     entry->limit2   = (limit & 0xf0000) >> 16;
     entry->base     = (uint32_t)(base & 0xffffff);
     entry->base3    = (uint8_t)((base & 0xff000000) >> 24);
-    entry->access   = access;
+    entry->access   = access | 0x10;
     entry->flags    = flags;
 }
 
@@ -22,8 +22,8 @@ void gdt_init()
     
     memset(&gdt_entries[0], 0, sizeof(struct GDTEntry));
 
-    gdt_entry_init(&gdt_entries[1], 0xffffffff, 0x0, 0x9a, 0xc);
-    gdt_entry_init(&gdt_entries[2], 0xffffffff, 0x0, 0x92, 0xc);
+    gdt_entry_init(&gdt_entries[1], 0xffffffff, 0x0, GDT_PRESENT | GDT_EXECUTABLE | GDT_RW, GDT_SIZE | GDT_GRANULARITY);
+    gdt_entry_init(&gdt_entries[2], 0xffffffff, 0x0, GDT_PRESENT | GDT_RW, GDT_SIZE | GDT_GRANULARITY);
 
     gdt_load(&gdt_ptr);
 }
