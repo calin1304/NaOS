@@ -4,12 +4,14 @@
 #include <stdint.h>
 
 enum GDT_ACCESS {
-    GDT_ACCESSED    = 0x01,
-    GDT_RW          = 0x02,
-    GDT_DC          = 0x04,
-    GDT_EXECUTABLE  = 0x08,
-    GDT_PRIVILETE   = 0x60,
-    GDT_PRESENT     = 0x80
+    GDT_ACCESSED        = 0x01,
+    GDT_RW              = 0x02,
+    GDT_DC              = 0x04,
+    GDT_EXECUTABLE      = 0x08,
+    GDT_PRIVILEGE_1     = 0x20,
+    GDT_PRIVILEGE_2     = 0x40,
+    GDT_PRIVILEGE_3     = 0x60,
+    GDT_PRESENT         = 0x80
 };
 
 enum GDT_FLAGS {
