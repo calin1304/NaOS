@@ -10,42 +10,18 @@
 #include "malloc.h"
 #include "fs/fat12/fat12.h"
 #include "ata.h"
-#include "kernel/include/paging.h"
-
+#include "kernel/include/memory.h"
+#include "kernel/include/pmm.h"
+#include "kernel/include/vmm.h"
+#include "kernel/include/elf.h"
 
 #include "libc/include/stdio.h"
 
 extern Console console;
 extern Clock clock;
 
-extern uint32_t enablePaging(uint32_t pageDirectoryAddress);
-
-#define PAGE_TABLES_COUNT 1
-
-PageDirectoryEntry pageDirectory[1024] __attribute__((aligned(4096)));
-PageTable pageTables[PAGE_TABLES_COUNT] __attribute__((aligned(4096)));
-
-void initPaging()
+void main(struct MemoryMapInfo* mminfo, uint16_t mmentries)
 {
-    for (int i = 0; i < 1024; ++i) {
-        pageDirectory[i] = 0x2;
-    }
-    for (int j = 0; j < PAGE_TABLES_COUNT; ++j) {
-        for (int i = 0; i < 1024; ++i) {
-            pageTables[j].entries[i] = ((i + 1024*j) * 0x1000) | 3;
-        }
-    }
-    for (int i = 0 ; i < PAGE_TABLES_COUNT; ++i) {
-        pageDirectory[i] = ((unsigned int)&(pageTables[i])) | 3;
-    }
-    
-    enablePaging((uint32_t)pageDirectory);
-}
-
-void main(void) 
-{
-    initPaging();
-
     uint16_t count = 1193180 / 100;
     outb(0x43, 0x36);
     outb(0x40, count & 0xffff);
@@ -58,26 +34,84 @@ void main(void)
     outb(PIC1_DATA, 0xFC); // Umask interrupts
     
     idt_init();
-    
-    heap_initialize();
+
     console_init(&console);
+
+    pmm_init(mminfo, mmentries, 0x20000);
+    vmm_init();
     
-    struct FAT12RootEntry *root = (struct FAT12RootEntry *)malloc(sizeof(struct FAT12RootEntry)*16);
-    uint8_t *fat = (uint8_t*)malloc(sizeof(uint8_t)*128);
-    
+    for (uint16_t i = 0; i < mmentries; ++i) {
+        printf("Start address: %x -> ", mminfo[i].base);
+        printf("length: %x ", mminfo[i].length);
+        if (mminfo[i].type == 0x1) {
+            printf("available memory\n");
+        } else if (mminfo[i].type == 0x2) {
+            printf("reserved memory\n");
+        } else if (mminfo[i].type == 0x3) {
+            printf("ACPI reclaim memory\n");
+        } else if (mminfo[i].type == 0x4) {
+            printf("ACPI NVS memory\n");
+        }
+    }
+
+    struct FAT12RootEntry *root = (struct FAT12RootEntry *)pmm_alloc_block();
+    if (!root) {
+        printf("Error on block physical allocation\n");
+    }
+    uint8_t *fat = (uint8_t*)pmm_alloc_block();
+    if (!fat) {
+        printf("Error on block physical allocation\n");
+    }
+
     ata_read_lba(19, 1, (uint16_t*)root);
     ata_read_lba(1, 1, (uint16_t*)fat);
 
-    struct FAT12RootEntry *f = fat12_find_file_root_entry(root, "WELCOME ");
-    if (!f) {
+    struct FAT12RootEntry *f = fat12_find_file_root_entry(root, "APP     ");
+    printf("Filesize: %d bytes\n", f->filesize);
+    uint8_t *buffer = (uint8_t*)pmm_alloc_block();
+    if (!buffer) {
+        printf("Error on block physical allocation\n");
+    }
+    fat12_load_file(fat, f, buffer);
+
+    Elf32Header *elfHeader = buffer;
+    Elf32ProgramHeader *elfProgramHeader = buffer + elfHeader->e_phoff;
+    Elf32SectionHeader *elfSectionHeader = buffer + elfHeader->e_shoff;
+    int (*target)();
+    for (int i = 0; i < elfHeader->e_shnum; ++i) {
+        char *s = buffer + elfSectionHeader[elfHeader->e_shstrndx].sh_offset + elfSectionHeader[i].sh_name;
+        if (elfSectionHeader[i].sh_addr != 0) {
+            uint8_t *sec;
+            if (!vmm_vaddr_is_mapped(elfSectionHeader[i].sh_addr)) {
+                sec = (uint8_t*)pmm_alloc_block();
+                vmm_map_page(sec, elfSectionHeader[i].sh_addr);
+            }
+            uint8_t *dat = buffer + elfSectionHeader[i].sh_offset;
+            memcpy(elfSectionHeader[i].sh_addr, dat, elfSectionHeader[i].sh_size);
+            if (strcmp(s, ".text") == 0) {   
+                target = sec;
+            }
+        }
+    }
+    printf("%d\n", target());
+    for (int i = 0; i < elfHeader->e_shnum; ++i) {
+        if (elfSectionHeader[i].sh_addr != 0) {
+            vmm_free_vaddr_page(elfSectionHeader[i].sh_addr);
+        }
+    }
+    
+    struct FAT12RootEntry *msg = fat12_find_file_root_entry(root, "WELCOME ");
+    if (!msg) {
         printf("Welcome message not found\n");
     } else {
-        uint16_t *dst = 0x3000;
-        fat12_load_file(fat, f, dst);
+        uint16_t *dst = (uint16_t*)pmm_alloc_block();
+        vmm_map_page(dst, dst);
+        fat12_load_file(fat, msg, dst);
         uint8_t *s = (uint8_t*)dst;
-        for (unsigned int i = 0; i < f->filesize; ++i) {
+        for (unsigned int i = 0; i < msg->filesize; ++i) {
             printf("%c", s[i]);
         }
+        vmm_free_vaddr_page(dst);
     }
     puts("\n[#] Kernel end");
     // int n = 200;

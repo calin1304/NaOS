@@ -1,8 +1,8 @@
 SOURCES := bootloader.asm
 TARGET := bootloader
 
-$(TARGET):
-	$(ASM) -o $(TARGET) -f bin bootloader.asm
+$(TARGET): $(SOURCES)
+	$(ASM) -o $(TARGET) -f bin $<
 
 .PHONY: clean
 clean:

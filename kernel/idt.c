@@ -6,6 +6,8 @@
 #include "keyboard.h"
 #include "clock.h"
 
+#include "libc/include/stdio.h"
+
 extern void idt_load(struct IDTPtr *idt_ptr);
 
 extern Console console;
@@ -18,54 +20,62 @@ extern void __isr6();
 extern void __isr7();
 extern void __isr8();
 extern void __isr13();
+extern void __isr14();
 extern void __isr_timer();
 extern void __isr_keyboard();
 
 void isr0()
 {
-    console_put_string(&console, "[!] Exception 0: Division by zero\n");
+    printf("[!] Exception 0: Division by zero\n");
     asm volatile ("cli");
     asm volatile ("hlt");
 }
 
 void isr4()
 {
-    console_put_string(&console, "[!] Exception 4: Overflow\n");
+    printf("[!] Exception 4: Overflow\n");
     asm volatile ("cli");
     asm volatile ("hlt");
 }
 
 void isr5()
 {
-    console_put_string(&console, "[!] Exception 5: Bound range exceded\n");
+    printf("[!] Exception 5: Bound range exceded\n");
     asm volatile ("cli");
     asm volatile ("hlt");
 }
 
 void isr6()
 {
-    console_put_string(&console, "[!] Exception 6: Invalid opcode\n");
+    printf("[!] Exception 6: Invalid opcode\n");
     asm volatile ("cli");
     asm volatile ("hlt");
 }
 
 void isr7()
 {
-    console_put_string(&console, "[!] Exception 7: Device not available\n");
+    printf("[!] Exception 7: Device not available\n");
     asm volatile ("cli");
     asm volatile ("hlt");
 }
 
 void isr8()
 {
-    console_put_string(&console, "[!] Exception 8: Double fault\n");
+    printf("[!] Exception 8: Double fault\n");
     asm volatile ("cli");
     asm volatile ("hlt");
 }
 
 void isr13()
 {
-    console_put_string(&console, "[!] Exception 13: General protection fault\n");
+    printf("[!] Exception 13: General protection fault\n");
+    asm volatile ("cli");
+    asm volatile ("hlt");
+}
+
+void isr14(uint32_t errorCode)
+{
+    printf("[!] Exception 14: Page fault, with error code: %x", errorCode);    
     asm volatile ("cli");
     asm volatile ("hlt");
 }
@@ -113,6 +123,7 @@ void idt_init()
     idt_set_gate(7,     (uint32_t)__isr7,           0x8, 0x8e);
     idt_set_gate(8,     (uint32_t)__isr8,           0x8, 0x8e);
     idt_set_gate(13,    (uint32_t)__isr13,          0x8, 0x8e);
+    idt_set_gate(14,    (uint32_t)__isr14,          0x8, 0x8e);
     idt_set_gate(0x20,  (uint32_t)__isr_timer,      0x8, 0x8e);
     idt_set_gate(0x21,  (uint32_t)__isr_keyboard,   0x8, 0x8e);
     idt_install();

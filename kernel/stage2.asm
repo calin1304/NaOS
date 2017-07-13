@@ -49,15 +49,48 @@ define_isr_wrapper isr6
 define_isr_wrapper isr7
 define_isr_wrapper isr8
 define_isr_wrapper isr13
+
+global __isr14
+__isr14:
+	pop eax
+	pusha
+	push gs
+	push fs
+	push ds
+	push es
+	
+	push eax
+	extern isr14
+	call isr14
+	pop eax
+
+	pop es
+	pop ds
+	pop fs
+	pop gs
+	popa
+	iret
+	
 define_isr_wrapper isr_default
 define_isr_wrapper isr_timer
 define_isr_wrapper isr_keyboard
 
 global enablePaging
 enablePaging:
-	mov eax, [esp+4];
-	mov cr3, eax
 	mov eax, cr0
 	or eax, 0x80000001
 	mov cr0, eax
+	ret
+	
+global loadPDBR
+loadPDBR:
+	mov eax, [esp+4];
+	mov cr3, eax
+	ret
+
+global vm_flush_tlb_page
+vm_flush_tlb_page:
+	cli
+	invlpg [esp+4]
+	sti
 	ret

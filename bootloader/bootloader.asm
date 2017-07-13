@@ -141,12 +141,27 @@ stage2Loaded:
 	; 	xor ax, ax
 	; 	mov al, 0x13
 	; 	int 0x10
-	call checkA20
-	cmp ax, 1
-	jz .jumpToKernel
+	; call checkA20
+	; cmp ax, 1
+	; jz jumpToKernel
 	call enableA20
 
-	.jumpToKernel:
+	getMemoryMap:
+		xor esi, esi
+		xor ebx, ebx
+		mov di, MEMORY_MAP_BUFFER
+		.L1:
+		mov eax, 0xe820
+		mov edx, 0x534D4150
+		mov ecx, 24
+		int 0x15
+		jc exit
+		add di, 24
+		inc si
+		cmp ebx, 0
+		jnz .L1
+
+	jumpToKernel:
 		cli
 		lgdt [toc]
 		mov eax, cr0
@@ -162,6 +177,11 @@ stage2Loaded:
 		mov es, ax
 		mov fs, ax
 		mov gs, ax
+		mov esp, 0x7c00
+		mov ebp, 0x7c00
+		push esi
+		push DWORD MEMORY_MAP_BUFFER
+
 		jmp 0x8:KERNEL_LONG_ADDR
 
 exit:
