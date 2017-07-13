@@ -19,8 +19,6 @@ enum GDT_FLAGS {
 
 struct GDTEntry {
     uint16_t    limit;
-    // uint16_t    base;
-    // uint8_t     base2;
     uint32_t    base    : 24;
     uint8_t     access;
     uint8_t     limit2  : 4;
