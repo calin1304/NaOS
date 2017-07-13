@@ -5,10 +5,10 @@ SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:%.c=%.o))
 LIBS := -lc
 TARGET := kernel
+LDFLAGS := -L "../libc"
 
 .PHONY: all
 all: $(TARGET)
-	echo $(LDFLAGS)
 
 $(TARGET): $(OBJECTS) $(BUILDDIR)/stage2.o
 	ld -m elf_i386 -T script.ld $(LDFLAGS) $^ $(LIBS)
@@ -23,5 +23,6 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 
 .PHONY: clean
 clean:
+	rm -f .obj/*.o
 	rm -f $(OBJECTS)
 	rm -f $(TARGET)
