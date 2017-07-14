@@ -132,9 +132,11 @@ void idt_init()
     idt_set_gate(8,     (uint32_t)__isr8,           0x8, 0x8e);
     idt_set_gate(13,    (uint32_t)__isr13,          0x8, 0x8e);
     idt_set_gate(14,    (uint32_t)__isr14,          0x8, 0x8e);
-    idt_set_gate(0x80,  (uint32_t)__int0x80,        0x8, 0x8e);
     idt_set_gate(0x20,  (uint32_t)__isr_timer,      0x8, 0x8e);
     idt_set_gate(0x21,  (uint32_t)__isr_keyboard,   0x8, 0x8e);
+
+    idt_set_gate(0x80,  (uint32_t)__int0x80,        0x8, 0xee);
+    
     idt_install();
 }
 
