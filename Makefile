@@ -7,7 +7,7 @@ export CFLAGS := -fno-builtin \
 		 -nostdlib \
 		 -Wall -Wextra -I ${abspath .} \
 		 -m32 
-export LDFLAGS := -L $(abspath ./libc)
+export LDFLAGS := -L $(abspath ./libk)
 
 OBJECT_FILES := .obj/stage2.o \
 				.obj/kmain.o \
@@ -20,7 +20,7 @@ BOOTLOADER := bootloader/bootloader
 KERNEL := kernel/kernel
 
 .PHONY: all
-all: bootloader libc kernel
+all: bootloader libk kernel
 
 .PHONY: floppy
 floppy: build/floppy.img
@@ -39,14 +39,14 @@ bootloader:
 kernel:
 	$(MAKE) -C kernel
 
-.PHONY: libc
-libc:
-	$(MAKE) -C libc
+.PHONY: libk
+libk:
+	$(MAKE) -C libk
 
 .PHONY: clean
 clean:
 	$(MAKE) -C bootloader clean
-	$(MAKE) -C libc clean
+	$(MAKE) -C libk clean
 	$(MAKE) -C kernel clean
 
 build/floppy.img:

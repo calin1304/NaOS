@@ -2,7 +2,7 @@
 #include "ata.h"
 #include "clock.h"
 
-#include "libc/include/string.h"
+#include "libk/include/string.h"
 
 const unsigned int ROOT_ENTRIES_COUNT = 224;
 

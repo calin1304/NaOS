@@ -15,12 +15,12 @@
 #include "kernel/include/vmm.h"
 #include "kernel/include/elf.h"
 
-#include "libc/include/stdio.h"
+#include "libk/include/stdio.h"
 
 extern Console console;
 extern Clock clock;
 
-void main(struct MemoryMapInfo* mminfo, uint16_t mmentries)
+void kmain(struct MemoryMapInfo* mminfo, uint16_t mmentries)
 {
     uint16_t count = 1193180 / 100;
     outb(0x43, 0x36);
@@ -79,7 +79,6 @@ void main(struct MemoryMapInfo* mminfo, uint16_t mmentries)
     Elf32SectionHeader *elfSectionHeader = buffer + elfHeader->e_shoff;
     int (*target)();
     for (int i = 0; i < elfHeader->e_shnum; ++i) {
-        char *s = buffer + elfSectionHeader[elfHeader->e_shstrndx].sh_offset + elfSectionHeader[i].sh_name;
         if (elfSectionHeader[i].sh_addr != 0) {
             uint8_t *sec;
             if (!vmm_vaddr_is_mapped(elfSectionHeader[i].sh_addr)) {
@@ -88,11 +87,9 @@ void main(struct MemoryMapInfo* mminfo, uint16_t mmentries)
             }
             uint8_t *dat = buffer + elfSectionHeader[i].sh_offset;
             memcpy(elfSectionHeader[i].sh_addr, dat, elfSectionHeader[i].sh_size);
-            if (strcmp(s, ".text") == 0) {   
-                target = sec;
-            }
         }
     }
+    target = elfHeader->e_entry;
     printf("%d\n", target());
     for (int i = 0; i < elfHeader->e_shnum; ++i) {
         if (elfSectionHeader[i].sh_addr != 0) {

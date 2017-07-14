@@ -4,7 +4,7 @@ BUILDDIR := .obj
 SRCDIR := .
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:%.c=%.o))
-TARGET := libc.a
+TARGET := libk.a
 
 .PHONY: all
 all: $(TARGET)

@@ -3,9 +3,9 @@ SRCDIR := .
 BUILDDIR := .obj
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:%.c=%.o))
-LIBS := -lc
+LIBS := -lk
 TARGET := kernel
-LDFLAGS := -L "../libc"
+LDFLAGS := -L../libk
 
 .PHONY: all
 all: $(TARGET)

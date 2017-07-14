@@ -5,7 +5,7 @@
 #include <stdarg.h>
 
 #include "defines.h"
-#include "libc/include/string.h"
+#include "libk/include/string.h"
 
 #define DEFAULT_CONSOLE_WIDTH   80
 #define DEFAULT_CONSOLE_HEIGHT  25

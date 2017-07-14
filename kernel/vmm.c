@@ -1,6 +1,6 @@
 #include "kernel/include/vmm.h"
 
-#include "libc/include/string.h"
+#include "libk/include/string.h"
 
 #define PDIR_INDEX(x) (((x) >> 22) & 0x3ff)
 #define PTABLE_INDEX(x) (((x) >> 12) & 0x3ff)

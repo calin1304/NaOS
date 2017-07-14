@@ -1,4 +1,4 @@
-#include "libc/include/string.h"
+#include "libk/include/string.h"
 
 void* memcpy(void *dst, void *src, size_t num)
 {

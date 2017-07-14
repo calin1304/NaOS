@@ -6,7 +6,7 @@
 #include "keyboard.h"
 #include "clock.h"
 
-#include "libc/include/stdio.h"
+#include "libk/include/stdio.h"
 
 extern void idt_load(struct IDTPtr *idt_ptr);
 
@@ -21,6 +21,7 @@ extern void __isr7();
 extern void __isr8();
 extern void __isr13();
 extern void __isr14();
+extern void __int0x80();
 extern void __isr_timer();
 extern void __isr_keyboard();
 
@@ -84,6 +85,14 @@ void isr_default()
 {
 }
 
+void int0x80(uint32_t eax, uint32_t ebx)
+{
+    if (eax == 1) {
+        // printf("syscall %x: %x\n", eax, ebx);
+        console_put_string(&console, ebx);
+    }   
+}
+
 extern Clock clock;
 
 void isr_timer()
@@ -124,6 +133,7 @@ void idt_init()
     idt_set_gate(8,     (uint32_t)__isr8,           0x8, 0x8e);
     idt_set_gate(13,    (uint32_t)__isr13,          0x8, 0x8e);
     idt_set_gate(14,    (uint32_t)__isr14,          0x8, 0x8e);
+    idt_set_gate(0x80,  (uint32_t)__int0x80,        0x8, 0x8e);
     idt_set_gate(0x20,  (uint32_t)__isr_timer,      0x8, 0x8e);
     idt_set_gate(0x21,  (uint32_t)__isr_keyboard,   0x8, 0x8e);
     idt_install();

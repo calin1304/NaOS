@@ -1,12 +1,12 @@
 BITS 32
 
-extern main
+extern kmain
 
 global _start
 
 SECTION .text
 _start:
-	call main
+	call kmain
 	jmp $
 
 global idt_load
@@ -74,6 +74,17 @@ __isr14:
 define_isr_wrapper isr_default
 define_isr_wrapper isr_timer
 define_isr_wrapper isr_keyboard
+
+global __int0x80
+__int0x80:
+	push ebx
+	push eax
+	extern int0x80
+	call int0x80
+	pop eax
+	pop ebx
+
+	iret
 
 global enablePaging
 enablePaging:

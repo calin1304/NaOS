@@ -1,7 +1,7 @@
 #include "kernel/include/pmm.h"
 
 #include "kernel/include/memory.h"
-#include "libc/include/string.h"
+#include "libk/include/string.h"
 
 #define PMM_BLOCK_SIZE 4096
 

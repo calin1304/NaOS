@@ -1,6 +1,6 @@
 #include <stdarg.h>
 
-#include "libc/include/stdio.h"
+#include "libk/include/stdio.h"
 
 #include "kernel/include/console.h"
 
