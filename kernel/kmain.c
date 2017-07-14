@@ -20,6 +20,32 @@
 extern Console console;
 extern Clock clock;
 
+void enter_userspace()
+{
+    __asm__(
+        "cli\n"
+        "movw $0x23, %ax\n"
+        "movw %ax, %ds\n"
+        "movw %ax, %es\n"
+        "movw %ax, %fs\n"
+        "movw %ax, %gs\n"
+        "pushl $0x23\n"
+        "push %esp\n"
+        "pushfl\n"
+        "pushl $0x1b\n"
+        "lea (a), %eax\n"
+        "pushl %eax\n"
+        "iretl\n"
+        "a: addl $4, %esp\n"
+    );
+    // const char msg[] = "hello, world from user space";
+    // asm("movl $0, %eax");
+    // asm("movl %0, %%ebx" : : "m"(msg) : "%ebx");
+    // asm("int $0x80");
+    printf("welcome to userspace\n");
+    // asm("hlt");
+}
+
 void kmain(struct MemoryMapInfo* mminfo, uint16_t mmentries)
 {
     uint16_t count = 1193180 / 100;
@@ -111,6 +137,8 @@ void kmain(struct MemoryMapInfo* mminfo, uint16_t mmentries)
         vmm_free_vaddr_page(dst);
     }
     puts("\n[#] Kernel end");
+    install_tss(0x10, 0);
+    // enter_userspace();
     // int n = 200;
     // int m = 320;
     // uint8_t *vga = (uint8_t*)0xA0000;

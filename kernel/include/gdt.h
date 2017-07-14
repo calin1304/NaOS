@@ -8,6 +8,7 @@ enum GDT_ACCESS {
     GDT_RW              = 0x02,
     GDT_DC              = 0x04,
     GDT_EXECUTABLE      = 0x08,
+    GDT_ALWAYS_1        = 0x10,
     GDT_PRIVILEGE_1     = 0x20,
     GDT_PRIVILEGE_2     = 0x40,
     GDT_PRIVILEGE_3     = 0x60,
@@ -33,9 +34,10 @@ struct GDTPtr {
     uint32_t base;
 } __attribute__((packed));
 
-struct GDTEntry gdt_entries[3];
+struct GDTEntry gdt_entries[6];
 struct GDTPtr   gdt_ptr;
 
 void gdt_init();
+void install_tss(uint16_t kernelSS, uint32_t kernelESP);
 
 #endif
