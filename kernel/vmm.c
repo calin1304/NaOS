@@ -130,6 +130,7 @@ void vmm_map_page(void *phys, void *virt)
         memset(table, 0, sizeof(PTable));
         pde_add_attrib(e, PDE_PRESENT);
         pde_add_attrib(e, PDE_WRITABLE);
+        pde_add_attrib(e, PDE_USER);
         pde_set_frame(e, (paddr)table);
     }
     PTable *table = (PTable*)PAGE_PHYS_ADDR(e);
@@ -137,6 +138,7 @@ void vmm_map_page(void *phys, void *virt)
     pte_set_frame(page, (paddr)phys);
     pte_add_attrib(page, PTE_PRESENT);
     pte_add_attrib(page, PTE_WRITABLE);
+    pte_add_attrib(page, PTE_USER);
 }
 
 void vmm_init()
@@ -153,6 +155,7 @@ void vmm_init()
         PTEntry *page = &(table->entries[i]);
         pte_add_attrib(page, PTE_PRESENT);
         pte_add_attrib(page, PTE_WRITABLE);
+        pte_add_attrib(page, PTE_USER);
         pte_set_frame(page, frame);
         frame += 4096;
         virt += 4096;
@@ -168,6 +171,7 @@ void vmm_init()
     PDEntry *entry = &(dir->entries[PDIR_INDEX(0x00000000)]);
     pde_add_attrib(entry, PDE_PRESENT);
     pde_add_attrib(entry, PDE_WRITABLE);
+    pde_add_attrib(entry, PDE_USER);
     pde_set_frame(entry, (paddr)table);
 
     vmm_switch_pdirectory(dir);
