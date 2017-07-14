@@ -3,10 +3,6 @@
 
 #include <stdint.h>
 
-struct FAT12Entry {
-    uint16_t value : 12;
-} __attribute__((packed));
-
 struct FAT12RootEntry{
     uint8_t     filename[8];
     uint8_t     extension[3];
