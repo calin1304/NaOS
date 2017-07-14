@@ -25,6 +25,7 @@ gdt_load:
 %macro define_isr_wrapper 1
 global __%1
 __%1:
+	cli
 	pusha
 	push gs
 	push fs
@@ -39,6 +40,7 @@ __%1:
 	pop fs
 	pop gs
 	popa
+	sti
 	iret
 %endmacro
 
@@ -52,6 +54,7 @@ define_isr_wrapper isr13
 
 global __isr14
 __isr14:
+	cli
 	pop eax
 	pusha
 	push gs
@@ -69,6 +72,7 @@ __isr14:
 	pop fs
 	pop gs
 	popa
+	sti
 	iret
 	
 define_isr_wrapper isr_default
@@ -77,13 +81,12 @@ define_isr_wrapper isr_keyboard
 
 global __int0x80
 __int0x80:
-	push ebx
+	cli
 	push eax
 	extern int0x80
 	call int0x80
-	pop eax
-	pop ebx
-
+	add esp, 4
+	sti
 	iret
 
 global enablePaging

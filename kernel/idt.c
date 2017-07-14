@@ -5,6 +5,7 @@
 #include "io.h"
 #include "keyboard.h"
 #include "clock.h"
+#include "kernel/include/syscalls.h"
 
 #include "libk/include/stdio.h"
 
@@ -85,12 +86,10 @@ void isr_default()
 {
 }
 
-void int0x80(uint32_t eax, uint32_t ebx)
+void int0x80(uint32_t eax)
 {
-    if (eax == 1) {
-        // printf("syscall %x: %x\n", eax, ebx);
-        console_put_string(&console, ebx);
-    }   
+    void (*apicall)() = syscalls[eax];
+    apicall();
 }
 
 extern Clock clock;
