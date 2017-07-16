@@ -2,9 +2,6 @@
 
 char* strcpy(char *dst, const char *src)
 {
-    while (*dst) {
-        ++dst;
-    }
     while (*src) {
         *dst = *src;
         ++dst;
