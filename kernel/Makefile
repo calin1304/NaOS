@@ -1,4 +1,4 @@
-CFLAGS := $(CFLAGS) -I./include
+CFLAGS := $(CFLAGS) -I./include -I../libk/include
 SRCDIR := .
 BUILDDIR := .obj
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
