@@ -14,38 +14,38 @@ const uint16_t ata_cmd_port                 = 0x1f7;
 const uint16_t ata_primary_control_register = 0x3F6;
 
 
-void ata_reset()
+void ata_reset(ATADrive *drive)
 {
-    outb(ata_primary_control_register, 4);
-    outb(ata_primary_control_register, 0);
+    outb(drive->ports.primaryControlRegister, 4);
+    outb(drive->ports.primaryControlRegister, 0);
 }
 
-void ata_wait_until_data_available()
+void ata_wait_until_data_available(ATADrive *drive)
 {
-    while ((inb(ata_cmd_port) & 8) == 0);
+    while ((inb(drive->ports.commandPort) & 8) == 0);
 }
 
 /*
     Source: http://wiki.osdev.org/ATA_read/write_sectors
 */
-void ata_read_lba(uint32_t lba, uint8_t sectors, uint16_t *dst)
+void ata_readLBA(ATADrive *drive, uint32_t lba, uint8_t sectors, uint16_t *dst)
 {
-    if ((inb(ata_cmd_port) & 0x88) == 0) {
-        ata_reset();
+    if ((inb(drive->ports.commandPort) & 0x88) == 0) {
+        ata_reset(drive);
     }
 
-    outb(ata_drive_head_port, 0xe0 | (((lba >> 24)) & 0x0f)); // set bit 6 for LBA mode
-    outb(ata_drive_err_port, 0);
-    outb(ata_sector_count_port, sectors); // sector count
-    outb(ata_low_lba_port, lba & 0xff);
-    outb(ata_mid_lba_port, (lba >> 8) & 0xff);
-    outb(ata_high_lba_port, (lba >> 16) & 0xff);
-    outb(ata_cmd_port, 0x20);
+    outb(drive->ports.headPort, 0xe0 | (((lba >> 24)) & 0x0f)); // set bit 6 for LBA mode
+    outb(drive->ports.errorPort, 0);
+    outb(drive->ports.sectorCountPort, sectors); // sector count
+    outb(drive->ports.lowLBAPort, lba & 0xff);
+    outb(drive->ports.midLBAPort, (lba >> 8) & 0xff);
+    outb(drive->ports.highLBAPort, (lba >> 16) & 0xff);
+    outb(drive->ports.commandPort, 0x20);
 
-    ata_wait_until_data_available(); 
+    ata_wait_until_data_available(drive);
     for (int i = 0; i < sectors; ++i) {
         for (int j = 0; j < 256; ++j) {
-            ata_wait_until_data_available(); 
+            ata_wait_until_data_available(drive); 
             dst[i * 256 + j] = inw(0x1f0);
         }
     }
