@@ -80,31 +80,57 @@ void kmain(struct MemoryMapInfo* mminfo, uint16_t mmentries)
         }
     }
 
-    struct FAT12RootEntry *root = (struct FAT12RootEntry *)pmm_alloc_block();
-    if (!root) {
-        printf("Error on block physical allocation\n");
-    }
-    uint8_t *fat = (uint8_t*)pmm_alloc_block();
-    if (!fat) {
-        printf("Error on block physical allocation\n");
-    }
+    ATADrivePorts ports;
+    ports.dataPort = 0x1f0;
+    ports.errorPort = 0x1f1;
+    ports.sectorCountPort = 0x1f2;
+    ports.lowLBAPort = 0x1f3;
+    ports.midLBAPort = 0x1f4;
+    ports.highLBAPort = 0x1f5;
+    ports.headPort = 0x1f6;
+    ports.commandPort = 0x1f7;
+    ports.primaryControlRegister = 0x3F6;
+    
+    ATADrive drive;
+    drive.ports = ports;
 
-    ata_read_lba(19, 1, (uint16_t*)root);
-    ata_read_lba(1, 1, (uint16_t*)fat);
-
-    struct FAT12RootEntry *f = fat12_find_file_root_entry(root, "APP     ");
-    printf("Filesize: %d bytes\n", f->filesize);
-    uint8_t *buffer = (uint8_t*)pmm_alloc_block();
-    if (!buffer) {
-        printf("Error on block physical allocation\n");
+    fat12_init(0, &drive);
+    FILE *f = fopen("a:/welcome");
+    if (!f) {
+        printf("Could not open file\n");
     }
-    fat12_load_file(fat, f, buffer);
-
+    printf("%s %d bytes\n", f->name, f->size);
+    uint8_t *buffer = pmm_alloc_block();
+    vmm_map_page(buffer, buffer);
+    int n = fread(buffer, sizeof(uint8_t), f->size, f);
+    printf("%d bytes read\n", n);
+    // for (int i = 0; i < f->size; ++i) {
+    //     printf("%c", buffer[i]);
+    // }
+        
+    // printf("%d\n", FAT12fs.bootSector.bytesPerSector);
+    // printf("%d\n", FAT12fs.bootSector.sectorsPerCluster);
+    // printf("%d\n", FAT12fs.bootSector.reservedSectors);
+    // printf("%d\n", FAT12fs.bootSector.numberOfFATs);
+    // printf("%d\n", FAT12fs.bootSector.rootEntries);
+    // printf("%d\n", FAT12fs.bootSector.sectorCount);
+    // printf("%d\n", FAT12fs.bootSector.sectorsPerFAT);
+    // printf("%d\n", FAT12fs.bootSector.sectorsPerTrack);
+    // printf("%d\n", FAT12fs.bootSector.headsPerCylinder);
+    // ata_readLBA(&drive, 19, 1, (uint16_t*)root);
+    // ata_readLBA(&drive, 1, 1, (uint16_t*)fat);
+    // FILE *ex = fopen("a:/app");
+    FILE *ex = fopen("a:/init");
+    printf("%s %d bytes\n", ex->name, ex->size);
+    fread(buffer, sizeof(uint8_t), f->size, ex);
     Elf32Header *elfHeader = buffer;
     Elf32ProgramHeader *elfProgramHeader = buffer + elfHeader->e_phoff;
     Elf32SectionHeader *elfSectionHeader = buffer + elfHeader->e_shoff;
     int (*target)();
+
     for (int i = 0; i < elfHeader->e_shnum; ++i) {
+        char *s_name = (uint8_t*)buffer + (elfSectionHeader[elfHeader->e_shstrndx].sh_offset + elfSectionHeader[i].sh_name);
+        printf("Loading %s\n", s_name);
         if (elfSectionHeader[i].sh_addr != 0) {
             uint8_t *sec;
             if (!vmm_vaddr_is_mapped(elfSectionHeader[i].sh_addr)) {
@@ -116,28 +142,15 @@ void kmain(struct MemoryMapInfo* mminfo, uint16_t mmentries)
         }
     }
     target = elfHeader->e_entry;
-    printf("%d\n", target());
+    printf("Program return code: %d\n", target());
     for (int i = 0; i < elfHeader->e_shnum; ++i) {
         if (elfSectionHeader[i].sh_addr != 0) {
             vmm_free_vaddr_page(elfSectionHeader[i].sh_addr);
         }
     }
     
-    struct FAT12RootEntry *msg = fat12_find_file_root_entry(root, "WELCOME ");
-    if (!msg) {
-        printf("Welcome message not found\n");
-    } else {
-        uint16_t *dst = (uint16_t*)pmm_alloc_block();
-        vmm_map_page(dst, dst);
-        fat12_load_file(fat, msg, dst);
-        uint8_t *s = (uint8_t*)dst;
-        for (unsigned int i = 0; i < msg->filesize; ++i) {
-            printf("%c", s[i]);
-        }
-        vmm_free_vaddr_page(dst);
-    }
     puts("\n[#] Kernel end");
-    install_tss(0x10, 0);
+    // install_tss(0x10, 0);
     // enter_userspace();
     // int n = 200;
     // int m = 320;
