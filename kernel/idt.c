@@ -77,7 +77,31 @@ void isr13()
 
 void isr14(uint32_t errorCode)
 {
-    printf("[!] Exception 14: Page fault, with error code: %x", errorCode);    
+    printf("[!] Exception 14: Page fault: ");
+    
+    if (errorCode & 0x1) {
+        printf("Page-protection violation ");
+    } else {
+        printf("Non-present page ");
+    }
+    if (errorCode & 0x2) {
+        printf("on page write ");
+    } else {
+        printf("on page read ");
+    }
+    if (errorCode & 0x4) {
+        printf("while CPL = 3 ");
+    }
+    if (errorCode & 0x8) {
+        printf("caused by reading 1 in reserved field ");
+    }
+    if (errorCode & 0x10) {
+        printf("Caused by instructon fetch");
+    }
+    uint32_t faultAddr;
+    // __asm__("movl %cr2, %eax");
+    __asm__("movl %%cr2, %0" : "=r"(faultAddr));
+    printf("\nFaulting address: %x\n", faultAddr);
     asm volatile ("cli");
     asm volatile ("hlt");
 }
