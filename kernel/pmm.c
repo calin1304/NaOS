@@ -11,8 +11,6 @@ uint32_t pmmBitmapBlockCount;
 #define PMM_BLOCK_FROM_PADDR(x) ((unsigned int)(x) / PMM_BLOCK_SIZE)
 #define PMM_BLOCK_ADDR(x) ((void*)((x) * PMM_BLOCK_SIZE));
 
-extern void enablePaging();
-
 void pmm_set_block(int i)
 {
     uint32_t *p = pmmBitmap + i / sizeof(uint32_t);
@@ -95,5 +93,12 @@ void pmm_load_pdbr(void *pdAddr)
 
 void pmm_enable_paging()
 {
-    enablePaging();
+    __asm__ __volatile__ (
+        "movl %%cr0, %%eax\n"
+        "orl $0x80000001, %%eax\n"
+        "movl %%eax, %%cr0\n"
+        :
+        :
+        : "%eax"
+    );
 }

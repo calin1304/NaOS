@@ -88,14 +88,7 @@ __int0x80:
 	add esp, 4
 	sti
 	iret
-
-global enablePaging
-enablePaging:
-	mov eax, cr0
-	or eax, 0x80000001
-	mov cr0, eax
-	ret
-	
+		
 global vm_flush_tlb_page
 vm_flush_tlb_page:
 	cli
