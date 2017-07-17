@@ -16,12 +16,6 @@ idt_load:
 	sti
 	ret
 
-global gdt_load
-gdt_load:
-	mov eax, [esp+4]
-	lgdt [eax]
-	ret
-
 %macro define_isr_wrapper 1
 global __%1
 __%1:

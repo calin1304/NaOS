@@ -2,7 +2,10 @@
 
 #include "libk/include/string.h"
 
-extern void gdt_load(struct GDTPtr *);
+static void gdt_load(struct GDTPtr *ptr)
+{
+	asm volatile("lgdt (%0)" : : "r"(ptr));
+}
 
 void gdt_entry_init(struct GDTEntry *entry, 
     uint32_t limit, uint32_t base, uint8_t access, uint8_t flags)
