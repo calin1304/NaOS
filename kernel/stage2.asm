@@ -96,12 +96,6 @@ enablePaging:
 	mov cr0, eax
 	ret
 	
-global loadPDBR
-loadPDBR:
-	mov eax, [esp+4];
-	mov cr3, eax
-	ret
-
 global vm_flush_tlb_page
 vm_flush_tlb_page:
 	cli
