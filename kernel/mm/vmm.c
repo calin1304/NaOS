@@ -1,4 +1,4 @@
-#include "kernel/include/vmm.h"
+#include "mm/vmm.h"
 
 #include "libk/include/string.h"
 

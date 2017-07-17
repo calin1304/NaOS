@@ -1,10 +1,10 @@
 #include "fs/fat12/fat12.h"
-#include "ata.h"
+#include "drivers/ata/ata.h"
 #include "clock.h"
 
 #include "libk/include/string.h"
-#include "kernel/include/pmm.h"
-#include "kernel/include/vmm.h"
+#include "mm/pmm.h"
+#include "mm/vmm.h"
 #include "kernel/include/vfs.h"
 
 #include <stdio.h>

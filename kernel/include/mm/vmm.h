@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "kernel/include/pmm.h"
+#include "mm/pmm.h"
 
 typedef uint32_t vaddr;
 typedef uint32_t PTEntry;

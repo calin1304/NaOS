@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "kernel/include/memory.h"
+#include "mm/memory.h"
 
 typedef uint32_t paddr;
 

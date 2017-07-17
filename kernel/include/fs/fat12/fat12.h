@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "kernel/include/ata.h"
+#include "drivers/ata/ata.h"
 #include "kernel/include/vfs.h"
 
 struct FAT12BootSector {
