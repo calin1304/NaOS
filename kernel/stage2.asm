@@ -9,13 +9,6 @@ _start:
 	call kmain
 	jmp $
 
-global idt_load
-idt_load:
-	mov eax, [esp+4]
-	lidt [eax]
-	sti
-	ret
-
 %macro define_isr_wrapper 1
 global __%1
 __%1:

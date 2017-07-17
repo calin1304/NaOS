@@ -9,7 +9,13 @@
 
 #include "libk/include/stdio.h"
 
-extern void idt_load(struct IDTPtr *idt_ptr);
+static void idt_load(struct IDTPtr *idt_ptr)
+{
+    asm volatile(
+        "lidt (%0)\n"
+        "sti" : : "r"(idt_ptr)
+    );
+}
 
 extern Console console;
 
