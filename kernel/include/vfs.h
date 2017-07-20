@@ -17,7 +17,7 @@ typedef struct FILE_ {
 } FILE;
 
 typedef struct FileSystem_ {
-    const char name[10];
+    char name[10];
     FILE* (*fopen)(const char*, const char*);
 } FileSystem;
 
@@ -25,4 +25,4 @@ FILE* vfs_fopen(const char *filename, const char *mode);
 size_t vfs_fread(void*, size_t, size_t, FILE*);
 void vfs_registerFileSystem(unsigned int, FileSystem*);
 
-#endif;
+#endif

@@ -28,8 +28,8 @@ struct FAT12BootSector {
 } __attribute__((packed));
 
 struct FAT12RootEntry{
-    uint8_t     filename[8];
-    uint8_t     extension[3];
+    char        filename[8];
+    char        extension[3];
     uint8_t     attributes;
     uint16_t    reserved;
     uint16_t    creationTime;
@@ -51,9 +51,5 @@ typedef struct FAT12FileSystem_ {
 void fat12_init(unsigned int volIdx, ATADrive *drive);
 FILE* fat12_fopen(const char*, const char*);
 size_t fat12_fread(void *ptr, size_t size, size_t count, FILE *f);
-
-struct FAT12RootEntry* fat12_find_file_root_entry(struct FAT12RootEntry *rootDirectory, const char *filename);
-uint16_t fat12_get_next_cluster(uint8_t *fatBase, uint16_t currentCluster);
-void fat12_load_file(uint8_t *fatBase, struct FAT12RootEntry *re, uint16_t *dst);
 
 #endif

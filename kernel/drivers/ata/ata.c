@@ -28,7 +28,7 @@ void ata_wait_until_data_available(ATADrive *drive)
 /*
     Source: http://wiki.osdev.org/ATA_read/write_sectors
 */
-void ata_readLBA(ATADrive *drive, uint32_t lba, uint8_t sectors, uint16_t *dst)
+void ata_readLBA(ATADrive *drive, uint32_t lba, uint8_t sectors, void *dst)
 {
     if ((inb(drive->ports.commandPort) & 0x88) == 0) {
         ata_reset(drive);
@@ -46,7 +46,7 @@ void ata_readLBA(ATADrive *drive, uint32_t lba, uint8_t sectors, uint16_t *dst)
     for (int i = 0; i < sectors; ++i) {
         for (int j = 0; j < 256; ++j) {
             ata_wait_until_data_available(drive); 
-            dst[i * 256 + j] = inw(0x1f0);
+            ((uint16_t*)dst)[i * 256 + j] = inw(0x1f0);
         }
     }
 }

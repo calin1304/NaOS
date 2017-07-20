@@ -41,8 +41,6 @@ enum PDE_FLAGS {
 
 int         vmm_alloc_page          (PTEntry *e);
 void        vmm_free_page           (PTEntry *e);
-PTEntry*    vmm_ptable_lookup_entry (PTable *p, vaddr addr);
-PDEntry*    vmm_pdir_lookup_entry   (PDirectory *p, vaddr addr);
 int         vmm_switch_pdirectory   (PDirectory *dir);
 PDirectory* vmm_get_directory       ();
 void        vmm_map_page            (void *phys, void *virt);

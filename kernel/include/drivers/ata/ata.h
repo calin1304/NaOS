@@ -19,6 +19,6 @@ typedef struct ATADrive_ {
     ATADrivePorts ports;
 } ATADrive;
 
-void ata_readLBA(ATADrive *drive, uint32_t lba, uint8_t sectors, uint16_t *dst);
+void ata_readLBA(ATADrive *drive, uint32_t lba, uint8_t sectors, void *dst);
 
 #endif

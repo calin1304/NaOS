@@ -74,7 +74,7 @@ void gdt_init()
 
 void install_tss(uint16_t kernelSS, uint32_t kernelESP)
 {
-    uint32_t base = &TSS;
+    uint32_t base = (uint32_t)&TSS;
     gdt_entry_init(&gdt_entries[5], base + sizeof(struct tss_entry), base, 
 		GDT_PRESENT | GDT_EXECUTABLE | GDT_PRIVILEGE_3 | GDT_ACCESSED, 0);
     memset((void*)&TSS, 0, sizeof(struct tss_entry));
