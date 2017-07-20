@@ -47,5 +47,6 @@ void        vmm_map_page            (void *phys, void *virt);
 void        vmm_init                ();
 int         vmm_vaddr_is_mapped     (vaddr);
 void        vmm_free_vaddr_page     (vaddr);
+void        vmm_identity_map        (PDirectory *pdir, paddr start, int count);
 
 #endif
