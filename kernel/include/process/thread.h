@@ -5,6 +5,8 @@
 
 #define DEFAULT_STACK_SIZE 4096
 
+#define THREAD_PAUSED 0
+
 typedef struct TrapFrame_{
     uint32_t esp;
     uint32_t ebp;
@@ -20,12 +22,13 @@ typedef struct TrapFrame_{
 
 typedef struct Thread_ {
     struct Process_     *parent;
-    void        *stack;
-    void        *stackLimit;
-    void        *kernelStack;
-    uint32_t    priority;
-    int         state;
-    TrapFrame   trapFrame;
+    void                *stack;
+    void                *stackLimit;
+    void                *kernelStack;
+    int(*entry)();
+    uint32_t            priority;
+    int                 state;
+    TrapFrame           trapFrame;
 } Thread;
 
 #endif

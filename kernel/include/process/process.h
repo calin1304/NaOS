@@ -13,6 +13,6 @@ typedef struct Process_ {
     Thread threads[MAX_THREADS_PER_PROCESS];
 } Process;
 
-int createProcess(const char* filename);
+Process* createProcess(const char* filename);
 
 #endif

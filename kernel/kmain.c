@@ -50,6 +50,55 @@ void enter_userspace()
     // asm("hlt");
 }
 
+typedef struct ProcessListNode_ {
+    Process *process;
+    struct ProcessListNode_ *next;
+} ProcessListNode;
+
+typedef struct ProcessList_ {
+    ProcessListNode *head;
+    int size;
+} ProcessList;
+
+void process_list_add(ProcessList *l, Process *proc)
+{
+    ProcessListNode *newNode = malloc(sizeof(ProcessListNode));
+    newNode->process = proc;
+    newNode->next = 0;
+    if (!l->head) {
+        l->head = newNode;
+    } else {
+        ProcessListNode *p = l->head;
+        while (p->next) {
+            p = p->next;
+        }
+        p->next = newNode;
+    }
+    l->size += 1;
+}
+
+int process_list_is_empty(ProcessList *l)
+{
+    return l->size == 0;
+}
+
+void process_list_pop_front(ProcessList *l)
+{
+    if (l->head) {
+        // Call destructors, free memory
+        l->head = l->head->next;
+    }
+    l->size -= 1;
+}
+
+ProcessList process_list_new()
+{
+    ProcessList ret;
+    ret.head = 0;
+    ret.size = 0;
+    return ret;
+}
+
 void kmain(struct MemoryMapInfo* mminfo, uint16_t mmentries)
 {
     uint16_t count = 1193180 / 100;
@@ -111,7 +160,17 @@ void kmain(struct MemoryMapInfo* mminfo, uint16_t mmentries)
     // for (int i = 0; i < f->size; ++i) {
     //     printf("%c", buffer[i]);
     // }
-    createProcess("a:/init"); // Should not execute now, just return Process structure.
+    Process *init = createProcess("a:/init"); // Should not execute now, just return Process structure.
+    // Process *app = createProcess("a:/app"); // Should create new vspace. it doesn't work because it overwrites sections on load
+    ProcessList pl = process_list_new();
+    process_list_add(&pl, init);
+    // process_list_add(&pl, app);
+    while (!process_list_is_empty(&pl)) {
+        Process *proc = pl.head->process;
+        proc->threads[0].entry();
+        process_list_pop_front(&pl);
+    }
+    // init->threads[0].entry();
     puts("\n[#] Kernel end");
     // uint32_t esp;
     // asm volatile("movl %%esp, %0" : "=r"(esp));

@@ -3,21 +3,44 @@
 #include "elf.h"
 #include "mm/pmm.h"
 #include "mm/vmm.h"
-#include <stdio.h>
-#include <string.h>
+#include "libk/include/stdio.h"
+#include "libk/include/string.h"
+#include "libk/include/stdlib.h"
 
-int createProcess(const char *path)
+static int currentAvailablePID = 1;
+
+#define PROCESS_PAUSED 0
+
+int get_next_availablePID() 
+{
+    return currentAvailablePID++;
+}
+
+Process* createProcess(const char *path)
 {
     FILE *f = fopen(path, "r");
 
     // Create new virtual space for process
-    PDirectory vspace;
-    memset(&vspace, 0, sizeof(PDirectory));
-    vmm_identity_map(&vspace, 0x00000000, 1);
-    // vmm_switch_vspace(&vspace);
+    // PDirectory vspace;
+    // memset(&vspace, 0, sizeof(PDirectory));
+    // vmm_identity_map(&vspace, 0x00000000, 3);
+    // printf("%x\n", &vspace);
+    // for (int i = 0; i < 10; ++i) {
+    //     printf("%x ", vspace.entries[i]);
+    // }
+    // printf("\n");
+    // PTable *t = vspace.entries[0] & (~0xfff);
+    // printf("%x\n", t);
+    // for (int i = 0;i  < 10; ++i) {
+    //     printf("%x ", t->entries[i]);
+    // }
+    
+    // asm("movl %0, %%eax" : : "r"(&vspace));
+    // asm ("cli\nhlt");
+    // vmm_switch_pdirectory(&vspace);
+    
 
-    uint8_t *buffer = pmm_alloc_block();
-    vmm_map_page(buffer, buffer);
+    uint8_t *buffer = malloc(f->size);
     fread(buffer, sizeof(uint8_t), f->size, f);
     Elf32Header *elfHeader = (Elf32Header*)buffer;
     // Elf32ProgramHeader *elfProgramHeader = buffer + elfHeader->e_phoff;
@@ -33,10 +56,32 @@ int createProcess(const char *path)
             memcpy(elfSectionHeader[i].sh_addr, dat, elfSectionHeader[i].sh_size);
         }
     }
-    // vmm_free_vaddr_page(buffer);
+    
     int (*entry)() = elfHeader->e_entry;
-    entry();
-    return 0;
+
+    Process *proc = pmm_alloc_block();
+    vmm_map_page(proc, proc);
+
+    Process *process = malloc(sizeof(Process));
+    process->id = get_next_availablePID();
+    process->state = PROCESS_PAUSED;
+    // process->pdir = vspace;
+
+    Thread *mainThread = process->threads;
+    mainThread->parent = process;
+    mainThread->state = THREAD_PAUSED;
+    mainThread->entry = (void*)entry;
+
+    for (int i = 0; i < elfHeader->e_shnum; ++i) {
+        if (elfSectionHeader[i].sh_addr != 0) {
+            if (vmm_vaddr_is_mapped(elfSectionHeader[i].sh_addr)) {
+                vmm_free_vaddr_page((vaddr)elfSectionHeader[i].sh_addr);
+            }
+        }
+    }
+    // vmm_restore_pdirectory();
+
+    return process;
 
     // void *processStack = pmm_alloc_block();
     // vmm_map_page(processStack, 0xffffff00);
@@ -46,12 +91,6 @@ int createProcess(const char *path)
     //     :
     //     : "r"(processStack), "r"(((uint32_t*)processStack)+1)
     // );
-
-    // Process *process = pmm_alloc_block();
-    // vmm_map_page(process, process);
-    // process->id = get_next_availablePID();
-    // process->state = PROCESS_PAUSED;
-    // process->pdir = vspace;
 
     // process.threads[0] = createThread(process, thread;
     // void *threadStack = vmm_alloc_page(); // Create new stack
