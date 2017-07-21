@@ -6,6 +6,9 @@
 
 #define MAX_THREADS_PER_PROCESS 1
 
+#define PROCESS_PAUSED 0
+#define PROCESS_RUNNING 1
+
 typedef struct Process_ {
     int id;
     int state;

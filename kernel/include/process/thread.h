@@ -1,11 +1,18 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-#include <process/process.h>
+#include <stdint.h>
 
 #define DEFAULT_STACK_SIZE 4096
 
 #define THREAD_PAUSED 0
+#define THREAD_RUNNING 1
+
+#define THREAD_PRIORITY_HIGH 0
+#define THREAD_PRIORITY_MEDIUM 1
+#define THREAD_PRIORITY_LOW 2
+
+typedef int(*entryFn)();
 
 typedef struct TrapFrame_{
     uint32_t esp;
@@ -25,10 +32,12 @@ typedef struct Thread_ {
     void                *stack;
     void                *stackLimit;
     void                *kernelStack;
-    int(*entry)();
-    uint32_t            priority;
+    entryFn             entry;
+    int                 priority;
     int                 state;
     TrapFrame           trapFrame;
 } Thread;
+
+Thread createThread(struct Process_ *parent, entryFn entry, int priority, int state);
 
 #endif

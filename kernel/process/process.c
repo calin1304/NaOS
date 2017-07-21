@@ -9,8 +9,6 @@
 
 static int currentAvailablePID = 1;
 
-#define PROCESS_PAUSED 0
-
 int get_next_availablePID() 
 {
     return currentAvailablePID++;
@@ -51,10 +49,6 @@ Process* createProcess(const char *path)
     int (*entry)() = elfHeader->e_entry;
 
     Thread *mainThread = process->threads;
-    mainThread->parent = process;
-    mainThread->state = THREAD_PAUSED;
-    mainThread->entry = (void*)entry;
-
-
+    *mainThread = createThread(process, entry, THREAD_PRIORITY_HIGH, THREAD_PAUSED);
     return process;
 }
