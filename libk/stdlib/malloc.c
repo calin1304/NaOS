@@ -4,9 +4,6 @@
 #include "kernel/include/mm/pmm.h"
 #include "kernel/include/mm/vmm.h"
 
-static Heap heap;
-static void* heapSegmentEnd;
-
 #define HEAP_START 0x006000000
 
 void heap_initialize()
