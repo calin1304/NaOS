@@ -153,24 +153,25 @@ void kmain(struct MemoryMapInfo* mminfo, uint16_t mmentries)
     //     printf("Could not open file\n");
     // }
     // printf("%s %d bytes\n", f->name, f->size);
-    // uint8_t *buffer = pmm_alloc_block();
-    // vmm_map_page(buffer, buffer);
+    // uint8_t *buffer = malloc(f->size);
     // int n = fread(buffer, sizeof(uint8_t), f->size, f);
     // printf("%d bytes read\n", n);
     // for (int i = 0; i < f->size; ++i) {
     //     printf("%c", buffer[i]);
     // }
     Process *init = createProcess("a:/init"); // Should not execute now, just return Process structure.
-    // Process *app = createProcess("a:/app"); // Should create new vspace. it doesn't work because it overwrites sections on load
+    Process *app = createProcess("a:/app"); // Should create new vspace. it doesn't work because it overwrites sections on load
     ProcessList pl = process_list_new();
     process_list_add(&pl, init);
-    // process_list_add(&pl, app);
+    process_list_add(&pl, app);
     while (!process_list_is_empty(&pl)) {
         Process *proc = pl.head->process;
-        proc->threads[0].entry();
+        int (*entry)() = proc->threads[0].entry;
+        vmm_switch_pdirectory(proc->pdir);  
+        entry();
+        vmm_restore_pdirectory();
         process_list_pop_front(&pl);
     }
-    // init->threads[0].entry();
     puts("\n[#] Kernel end");
     // uint32_t esp;
     // asm volatile("movl %%esp, %0" : "=r"(esp));
