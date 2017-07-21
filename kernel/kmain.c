@@ -7,7 +7,6 @@
 #include "io.h"
 #include "pic.h"
 #include "clock.h"
-#include "malloc.h"
 #include "fs/fat12/fat12.h"
 #include "drivers/ata/ata.h"
 #include "mm/memory.h"
@@ -18,6 +17,7 @@
 #include "process/process.h"
 
 #include "libk/include/stdio.h"
+#include "libk/include/stdlib.h"
 
 extern Console console;
 extern Clock clock;
