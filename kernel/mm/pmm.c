@@ -101,3 +101,10 @@ void pmm_enable_paging()
         : "%eax"
     );
 }
+
+void pmm_disable_paging()
+{
+    uint32_t cr0;
+    asm volatile("movl %%cr0, %0" : "=r"(cr0));
+    asm volatile("movl %0, %%cr0" : : "r"(cr0 & (~0x80000000)));
+}

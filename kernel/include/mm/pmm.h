@@ -13,5 +13,6 @@ void pmm_free_block(void*);
 
 void pmm_load_pdbr(void *pdAddr);
 void pmm_enable_paging();
+void pmm_disable_paging();
 
 #endif
