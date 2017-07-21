@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "mm/pmm.h"
+#include "kernel/include/mm/pmm.h"
 
 typedef uint32_t vaddr;
 typedef uint32_t PTEntry;
@@ -42,6 +42,7 @@ enum PDE_FLAGS {
 int         vmm_alloc_page          (PTEntry *e);
 void        vmm_free_page           (PTEntry *e);
 int         vmm_switch_pdirectory   (PDirectory *dir);
+void        vmm_restore_pdirectory  ();
 PDirectory* vmm_get_directory       ();
 void        vmm_map_page            (void *phys, void *virt);
 void        vmm_init                ();

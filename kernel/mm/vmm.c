@@ -8,9 +8,18 @@
 #define PAGE_PHYS_ADDR(x) (*(x) & (~0xfff))
 
 PDirectory *currentDirectory = 0;
-paddr currentPDBR = 0;
+PDirectory *oldDirectory = 0;
 
-extern void vm_flush_tlb_page(vaddr addr);
+static void vmm_flush_tlb_page(vaddr addr)
+{
+    asm volatile(
+        "cli\n"
+        "invlpg %0\n"
+        "sti"
+        :
+        : "m"(addr)
+    );
+}
 
 static void pte_add_attrib(PTEntry *e, uint32_t attrib)
 {
@@ -107,9 +116,15 @@ int vmm_switch_pdirectory(PDirectory *dir)
     if (!dir) {
         return 0;
     }
+    oldDirectory = currentDirectory;
     currentDirectory = dir;
     pmm_load_pdbr(currentDirectory);
     return 1;
+}
+
+void vmm_restore_pdirectory()
+{
+    currentDirectory = oldDirectory;
 }
 
 PDirectory* vmm_get_directory()
@@ -130,36 +145,17 @@ void vmm_map_page(void *phys, void *virt)
         memset(table, 0, sizeof(PTable));
         pde_add_attrib(e, PDE_PRESENT);
         pde_add_attrib(e, PDE_WRITABLE);
-        pde_add_attrib(e, PDE_USER);
         pde_set_frame(e, (paddr)table);
     }
-    PTable *table = (PTable*)PAGE_PHYS_ADDR(e);
+    PTable *table = (PTable*)pde_get_paddr(*e);
     PTEntry *page = &(table->entries[PTABLE_INDEX((uint32_t)virt)]);
     pte_set_frame(page, (paddr)phys);
     pte_add_attrib(page, PTE_PRESENT);
     pte_add_attrib(page, PTE_WRITABLE);
-    pte_add_attrib(page, PTE_USER);
 }
 
 void vmm_init()
 {
-    // PTable *table = (PTable*)pmm_alloc_block();
-    // if (!table) {
-    //     asm("cli\nhlt");
-    //     return;
-    // }
-    // vmm_ptable_clear(table);
-
-    // for (int i = 0, frame = 0x0, virt = 0x00000000; i < 1024; ++i) {
-    //     PTEntry *page = &(table->entries[i]);
-    //     pte_add_attrib(page, PTE_PRESENT);
-    //     pte_add_attrib(page, PTE_WRITABLE);
-    //     pte_add_attrib(page, PTE_USER);
-    //     pte_set_frame(page, frame);
-    //     frame += 4096;
-    //     virt += 4096;
-    // }
-
     PDirectory *dir = (PDirectory*)pmm_alloc_block();
     if (!dir) {
         asm("cli\nhlt");
@@ -167,11 +163,6 @@ void vmm_init()
     }
     memset(dir, 0, sizeof(PDirectory));
     vmm_identity_map(dir, 0x0, 1024);
-    // PDEntry *entry = &(dir->entries[PDIR_INDEX(0x00000000)]);
-    // pde_add_attrib(entry, PDE_PRESENT);
-    // pde_add_attrib(entry, PDE_WRITABLE);
-    // pde_add_attrib(entry, PDE_USER);
-    // pde_set_frame(entry, (paddr)table);
 
     vmm_switch_pdirectory(dir);
     pmm_enable_paging();
@@ -200,12 +191,12 @@ void vmm_free_vaddr_page(vaddr addr)
         return;
     }
     vmm_free_page(pte);
-    vm_flush_tlb_page(addr);
+    vmm_flush_tlb_page(addr);
 }
 
 void vmm_identity_map(PDirectory *pdir, paddr start, int count)
 {
-    vaddr currAddr = PAGE_OFFSET(start);
+    vaddr currAddr = start;// & (~0xfff);
     for (int i = 0; i < count; ++i) {
         PDEntry *t = &(pdir->entries[PDIR_INDEX(currAddr)]);
         if (*t == 0) {
@@ -219,7 +210,7 @@ void vmm_identity_map(PDirectory *pdir, paddr start, int count)
         PTEntry *e = &(table->entries[PTABLE_INDEX(currAddr)]);
         pte_add_attrib(e, PTE_WRITABLE);
         pte_add_attrib(e, PTE_PRESENT);
-        pte_set_frame(e, currAddr);
+        pte_set_frame(e, (paddr)currAddr);
         currAddr += PAGE_SIZE;
     }
 }
