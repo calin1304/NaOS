@@ -10,7 +10,7 @@
 PDirectory *currentDirectory = 0;
 PDirectory *oldDirectory = 0;
 
-static void vmm_flush_tlb_page(vaddr addr)
+void vmm_flush_tlb_page(vaddr addr)
 {
     asm volatile(
         "cli\n"
@@ -21,72 +21,72 @@ static void vmm_flush_tlb_page(vaddr addr)
     );
 }
 
-static void pte_add_attrib(PTEntry *e, uint32_t attrib)
+void pte_add_attrib(PTEntry *e, uint32_t attrib)
 {
     *e |= attrib;
 }
 
-static void pte_del_attrib(PTEntry *e, uint32_t attrib)
+void pte_del_attrib(PTEntry *e, uint32_t attrib)
 {
     *e &= (~attrib);
 }
 
-static void pte_set_frame(PTEntry *e, paddr phyAddr)
+void pte_set_frame(PTEntry *e, paddr phyAddr)
 {
     *e = (phyAddr) | (*e & 0xfff);
 }
 
-static int pte_is_present(PTEntry e)
+int pte_is_present(PTEntry e)
 {
     return (e & PTE_PRESENT) == PTE_PRESENT;
 }
 
-// static int pte_is_writable(PTEntry e)
+// int pte_is_writable(PTEntry e)
 // {
 //     return (e & PTE_WRITABLE) != 0;
 // }
 
-static paddr pte_get_paddr(PTEntry e)
+paddr pte_get_paddr(PTEntry e)
 {
     return (e & (~0xfff));
 }
 
-static void pde_add_attrib(PDEntry *e, uint32_t attrib)
+void pde_add_attrib(PDEntry *e, uint32_t attrib)
 {
     *e |= attrib;
 }
 
-// static void pde_del_attrib(PDEntry *e, uint32_t attrib)
+// void pde_del_attrib(PDEntry *e, uint32_t attrib)
 // {
 //     *e &= (~attrib);
 // }
 
-static void pde_set_frame(PDEntry *e, paddr phyAddr)
+void pde_set_frame(PDEntry *e, paddr phyAddr)
 {
     *e = (phyAddr) | (*e & 0xfff);
 }
 
-static int pde_is_present(PDEntry e)
+int pde_is_present(PDEntry e)
 {
     return (e & PDE_PRESENT) == PDE_PRESENT;
 }
 
-// static int pde_is_user(PDEntry e)
+// int pde_is_user(PDEntry e)
 // {
 //     return (e & PDE_USER) != 0;
 // }
 
-// static int pde_is_writable(PDEntry e)
+// int pde_is_writable(PDEntry e)
 // {
 //      return (e & PDE_WRITABLE) != 0;
 // }
 
-static paddr pde_get_paddr(PDEntry e)
+paddr pde_get_paddr(PDEntry e)
 {
     return (e & (~0xfff));
 }
 
-static void vmm_ptable_clear(PTable *t)
+void vmm_ptable_clear(PTable *t)
 {
     memset(t, 0, sizeof(PTable));
 }
@@ -123,8 +123,8 @@ int vmm_switch_pdirectory(PDirectory *dir)
 }
 
 void vmm_restore_pdirectory()
-{
-    currentDirectory = oldDirectory;
+{    
+    vmm_switch_pdirectory(oldDirectory);
 }
 
 PDirectory* vmm_get_directory()
@@ -134,24 +134,7 @@ PDirectory* vmm_get_directory()
 
 void vmm_map_page(void *phys, void *virt)
 {
-    PDirectory *dir = currentDirectory;
-    PDEntry *e = &(dir->entries[PDIR_INDEX((uint32_t)virt)]);
-    if (pde_is_present(*e) == 0) {
-        PTable *table = (PTable*)pmm_alloc_block();
-        if (!table) {
-            asm("cli\nhlt");
-            return;
-        }
-        memset(table, 0, sizeof(PTable));
-        pde_add_attrib(e, PDE_PRESENT);
-        pde_add_attrib(e, PDE_WRITABLE);
-        pde_set_frame(e, (paddr)table);
-    }
-    PTable *table = (PTable*)pde_get_paddr(*e);
-    PTEntry *page = &(table->entries[PTABLE_INDEX((uint32_t)virt)]);
-    pte_set_frame(page, (paddr)phys);
-    pte_add_attrib(page, PTE_PRESENT);
-    pte_add_attrib(page, PTE_WRITABLE);
+    pdir_map_page(currentDirectory, phys, virt);
 }
 
 void vmm_init()
@@ -166,20 +149,11 @@ void vmm_init()
 
     vmm_switch_pdirectory(dir);
     pmm_enable_paging();
-    
 }
 
 int vmm_vaddr_is_mapped(vaddr addr)
 {
-    PDirectory *dir = currentDirectory;
-    if (!pde_is_present(dir->entries[PDIR_INDEX(addr)])) {
-        return 0;
-    }
-    PTable *table = (PTable*)pde_get_paddr(dir->entries[PDIR_INDEX(addr)]);
-    if (!pte_is_present(table->entries[PTABLE_INDEX(addr)])) {
-        return 0;
-    }
-    return 1;
+    return pdir_vaddr_is_mapped(currentDirectory, addr);
 }
 
 void vmm_free_vaddr_page(vaddr addr)
@@ -213,4 +187,53 @@ void vmm_identity_map(PDirectory *pdir, paddr start, int count)
         pte_set_frame(e, (paddr)currAddr);
         currAddr += PAGE_SIZE;
     }
+}
+
+void pdir_map_page(PDirectory *dir, void *phys, void *virt)
+{
+    PDEntry *e = &(dir->entries[PDIR_INDEX((uint32_t)virt)]);
+    if (pde_is_present(*e) == 0) {
+        PTable *table = (PTable*)pmm_alloc_block();
+        if (!table) {
+            asm("cli\nhlt");
+            return;
+        }
+        memset(table, 0, sizeof(PTable));
+        pde_add_attrib(e, PDE_PRESENT);
+        pde_add_attrib(e, PDE_WRITABLE);
+        pde_set_frame(e, (paddr)table);
+    }
+    PTable *table = (PTable*)pde_get_paddr(*e);
+    PTEntry *page = &(table->entries[PTABLE_INDEX((uint32_t)virt)]);
+    pte_set_frame(page, (paddr)phys);
+    pte_add_attrib(page, PTE_PRESENT);
+    pte_add_attrib(page, PTE_WRITABLE);
+}
+
+int pdir_vaddr_is_mapped(PDirectory *dir, vaddr addr)
+{
+    if (!pde_is_present(dir->entries[PDIR_INDEX(addr)])) {
+        return 0;
+    }
+    PTable *table = (PTable*)pde_get_paddr(dir->entries[PDIR_INDEX(addr)]);
+    if (!pte_is_present(table->entries[PTABLE_INDEX(addr)])) {
+        return 0;
+    }
+    return 1;
+}
+
+paddr pdir_get_paddr(PDirectory *dir, vaddr virt)
+{
+    PDEntry *pde = &(dir->entries[PDIR_INDEX(virt)]);
+    PTable *t = pde_get_paddr(*pde);
+    PTEntry *pte = &(t->entries[PTABLE_INDEX(virt)]);
+    return pte_get_paddr(*pte);
+}
+
+void* vmm_get_phys_addr(vaddr virt)
+{
+    PDEntry *pde = &(currentDirectory->entries[PDIR_INDEX(virt)]);
+    PTable *pt = (PTable*)pde_get_paddr(*pde);
+    PTEntry *pte = &(pt->entries[PTABLE_INDEX(virt)]);
+    return pte_get_paddr(*pte) + PAGE_OFFSET(virt);
 }

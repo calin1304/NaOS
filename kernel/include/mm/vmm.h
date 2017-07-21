@@ -39,6 +39,22 @@ enum PDE_FLAGS {
     PDE_4MB_PAGE        = 0x80
 };
 
+void pdir_map_page(PDirectory *dir, void *phys, void *virt);
+int pdir_vaddr_is_mapped(PDirectory*, vaddr);
+paddr pdir_get_paddr(PDirectory *dir, vaddr);
+
+void pte_add_attrib(PTEntry *e, uint32_t attrib);
+void pte_del_attrib(PTEntry *e, uint32_t attrib);
+void pte_set_frame(PTEntry *e, paddr phyAddr);
+int pte_is_present(PTEntry e);
+paddr pte_get_paddr(PTEntry e);
+void pde_add_attrib(PDEntry *e, uint32_t attrib);
+void pde_set_frame(PDEntry *e, paddr phyAddr);
+int pde_is_present(PDEntry e);
+paddr pde_get_paddr(PDEntry e);
+
+void* vmm_get_phys_addr(vaddr virt);
+
 int         vmm_alloc_page          (PTEntry *e);
 void        vmm_free_page           (PTEntry *e);
 int         vmm_switch_pdirectory   (PDirectory *dir);
