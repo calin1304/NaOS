@@ -1,6 +1,3 @@
-#ifndef MALLOC_H
-#define MALLOC_H
-
 #include <stdint.h>
 
 typedef struct HeapNode_ {
@@ -14,8 +11,3 @@ typedef struct Heap_ {
     HeapNode *end;
     int size;
 } Heap;
-
-void heap_initialize();
-void* malloc(unsigned int size);
-
-#endif
