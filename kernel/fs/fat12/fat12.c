@@ -19,16 +19,14 @@ FAT12FileSystem fat12FS;
 
 void fat12_init(unsigned int volIdx, ATADrive *drive)
 {
-    uint8_t *buffer = (uint8_t*)pmm_alloc_block();
-    vmm_map_page(buffer, buffer);
+    uint8_t *buffer = (uint8_t*)malloc(512);
     ata_readLBA(drive, 0, 1, buffer);
     const char fsName[] = "FAT12";
     strcpy(fat12FS.fs.name, fsName);
     fat12FS.fs.fopen = fat12_fopen;
     fat12FS.bootSector = *((struct FAT12BootSector*)buffer);
     fat12FS.drive = *drive;
-    vmm_free_vaddr_page((vaddr)buffer);
-    pmm_free_block(buffer);
+    // free(buffer);
     vfs_registerFileSystem(volIdx, (FileSystem*)&fat12FS);
 }
 
@@ -90,8 +88,7 @@ FILE* fat12_fopen(const char* path, const char* mode __attribute__ ((unused)))
     if (!entry.attributes) {
         return 0;
     }
-    FILE *ret = (FILE*)pmm_alloc_block();
-    vmm_map_page(ret, ret);
+    FILE *ret = malloc(sizeof(FILE));
     ret->size = entry.filesize;
     strcpy(ret->name, filename);
     ret->eof = 0;
