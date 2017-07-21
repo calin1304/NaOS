@@ -75,10 +75,3 @@ __int0x80:
 	add esp, 4
 	sti
 	iret
-		
-global vm_flush_tlb_page
-vm_flush_tlb_page:
-	cli
-	invlpg [esp+4]
-	sti
-	ret
