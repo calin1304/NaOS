@@ -20,7 +20,6 @@ void gdt_entry_init(struct GDTEntry *entry,
 
 void load_tsr(uint16_t sel)
 {
-    // __asm__("cli\nhlt");
     __asm__("ltr %0" : : "r"(sel));
 }
 
