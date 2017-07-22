@@ -184,3 +184,10 @@ void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags)
     idt[num].baseLo = (base & 0x0000ffff);
     idt[num].baseHi = (base & 0xffff0000) >> 16;
 }
+
+void* idt_get_gate(uint8_t num)
+{
+    uint32_t ret;
+    ret = idt[num].baseLo | (idt[num].baseHi << 16);
+    return (void*)ret;
+}
