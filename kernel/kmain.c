@@ -99,6 +99,27 @@ ProcessList process_list_new()
     return ret;
 }
 
+// extern void __isr_timer();
+
+// ProcessListNode *currRunning;
+
+// void scheduler_interrupt()
+// {
+//     if (currRunning) {
+//         Process *proc = currRunning->process;
+//         proc->ticks += 1;
+//         if (proc->ticks == 5) {
+
+//         }
+//     }
+//     asm volatile("leave");
+//     asm volatile(
+//         "jmp %0"
+//         :
+//         : "r"(__isr_timer)
+//     );
+// }
+
 void kmain(struct MemoryMapInfo* mminfo, uint16_t mmentries)
 {
     uint16_t count = 1193180 / 100;
@@ -159,16 +180,33 @@ void kmain(struct MemoryMapInfo* mminfo, uint16_t mmentries)
     // for (int i = 0; i < f->size; ++i) {
     //     printf("%c", buffer[i]);
     // }
-    Process *init = createProcess("a:/init"); // Should not execute now, just return Process structure.
-    Process *app = createProcess("a:/app"); // Should create new vspace. it doesn't work because it overwrites sections on load
+    Process *init = createProcess("a:/init");
+    Process *app = createProcess("a:/app");
     ProcessList pl = process_list_new();
     process_list_add(&pl, init);
     process_list_add(&pl, app);
+
+    // void *timer_isr = idt_get_gate(0x20);
+    // printf("%p", timer_isr);
+    // asm volatile("cli");
+    // idt_set_gate(0x20, (uint32_t)scheduler_interrupt, 0x8, 0x8e);
+    // asm volatile("sti");
+
     while (!process_list_is_empty(&pl)) {
         Process *proc = pl.head->process;
-        int (*entry)() = proc->threads[0].entry;
-        vmm_switch_pdirectory(proc->pdir);  
-        entry();
+        int (*entry)() = proc->threads[0].entry;        
+        vmm_switch_pdirectory(proc->pdir);
+        asm volatile(
+            "lea .after_iret, %%eax\n"
+            "pushl %%eax\n"
+            "pushl %0\n"
+            "pushl %1\n"
+            "retf\n"
+            ".after_iret:"
+            :
+            : "i"(0x8), "m"(entry)
+        );
+        // entry();
         vmm_restore_pdirectory();
         process_list_pop_front(&pl);
     }
