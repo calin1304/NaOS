@@ -1,4 +1,4 @@
-CFLAGS := -ffreestanding -nostdlib -m32 -Wall -Wextra -I ..
+CFLAGS := $(CFLAGS) -I ..
 AR := ar
 BUILDDIR := .obj
 SRCDIR := .
