@@ -11,5 +11,6 @@ char* strcpy(char *dst, const char *src);
 int strcmp(const char *str1, const char *str2);
 int strncmp(const char *str1, const char *str2, size_t num);
 char* strtok(char *s, const char *delims);
+char* strchr(char *s, int c);
 
 #endif
