@@ -3,9 +3,9 @@
 #include "elf.h"
 #include "mm/pmm.h"
 #include "mm/vmm.h"
-#include "libk/include/stdio.h"
-#include "libk/include/string.h"
-#include "libk/include/stdlib.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 static int currentAvailablePID = 1;
 

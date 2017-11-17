@@ -22,7 +22,7 @@ KERNEL := kernel/kernel
 DISK_MOUNT_LOCATION := build/floppy_mnt
 
 .PHONY: all
-all: bootloader libk kernel
+all: bootloader kernel
 
 .PHONY: floppy
 floppy: build build/floppy.img
@@ -44,14 +44,9 @@ bootloader:
 kernel:
 	$(MAKE) -C kernel
 
-.PHONY: libk
-libk:
-	$(MAKE) -C libk
-
 .PHONY: clean
 clean:
 	$(MAKE) -C bootloader clean
-	$(MAKE) -C libk clean
 	$(MAKE) -C kernel clean
 
 build/floppy.img:

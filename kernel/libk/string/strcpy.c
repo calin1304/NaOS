@@ -1,5 +1,3 @@
-#include "libk/include/string.h"
-
 char* strcpy(char *dst, const char *src)
 {
     while (*src) {

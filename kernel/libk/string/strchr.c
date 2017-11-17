@@ -1,4 +1,4 @@
-#include "libk/include/string.h"
+#include "string.h"
 
 char* strchr(char *s, int c)
 {

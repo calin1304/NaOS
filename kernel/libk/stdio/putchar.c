@@ -1,4 +1,4 @@
-#include "libk/include/stdio.h"
+#include "stdio.h"
 
 #include "kernel/include/console.h"
 

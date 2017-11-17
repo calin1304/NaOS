@@ -16,8 +16,8 @@
 
 #include "process/process.h"
 
-#include "libk/include/stdio.h"
-#include "libk/include/stdlib.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 extern Console console;
 extern Clock clock;

@@ -1,6 +1,6 @@
 #include "kernel/include/vfs.h"
 
-#include "libk/include/stdio.h"
+#include "stdio.h"
 
 size_t fread(void *ptr, size_t size, size_t count, FILE *f)
 {

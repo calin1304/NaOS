@@ -7,7 +7,7 @@
 #include "clock.h"
 #include "kernel/include/syscalls.h"
 
-#include "libk/include/stdio.h"
+#include <stdio.h>
 
 static void idt_load(struct IDTPtr *idt_ptr)
 {

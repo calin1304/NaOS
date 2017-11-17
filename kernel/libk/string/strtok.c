@@ -1,4 +1,4 @@
-#include "libk/include/string.h"
+#include "string.h"
 
 char* strtok(char *s, const char *delims)
 {
