@@ -21,8 +21,20 @@ typedef struct FileSystem_ {
     FILE* (*fopen)(const char*, const char*);
 } FileSystem;
 
-FILE* vfs_fopen(const char *filename, const char *mode);
 size_t vfs_fread(void*, size_t, size_t, FILE*);
-void vfs_registerFileSystem(unsigned int, FileSystem*);
+
+typedef struct VFSNode_ {
+    char *path;
+    char *name;
+    FileSystem *mountedFS;
+    unsigned int childNodesCount;
+    unsigned int childNodeSize;
+    struct VFSNode_** childNodes; // TODO: Use a generic linked list
+} VFSNode;
+
+VFSNode gVFSRoot;
+
+void vfsInit();
+void vfsMount(const char *path, FileSystem *fs);
 
 #endif

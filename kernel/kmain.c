@@ -169,22 +169,28 @@ void kmain(struct MemoryMapInfo* mminfo, uint16_t mmentries)
     drive.ports = ports;
 
     fat12_init(0, &drive);
-    // FILE *f = (FILE*)fopen("a:/welcome", "");
-    // if (!f) {
-    //     printf("Could not open file\n");
-    // }
-    // printf("%s %d bytes\n", f->name, f->size);
-    // uint8_t *buffer = malloc(f->size);
-    // int n = fread(buffer, sizeof(uint8_t), f->size, f);
-    // printf("%d bytes read\n", n);
-    // for (int i = 0; i < f->size; ++i) {
-    //     printf("%c", buffer[i]);
-    // }
-    Process *init = createProcess("a:/init");
-    Process *app = createProcess("a:/app");
-    ProcessList pl = process_list_new();
-    process_list_add(&pl, init);
-    process_list_add(&pl, app);
+
+    FAT12FileSystem *fat12FS = getFAT12Driver();
+    vfsInit();
+    vfsMount("/", fat12FS);
+    FILE *f = fopen("/welcome", "r");
+    if (f == NULL){
+        printf("[!]File not found\n");
+    } else {
+        printf("File name %s\nFile size %d\n", f->name, f->size);
+    }
+    uint8_t *buffer = malloc(f->size);
+    int n = fread(buffer, sizeof(uint8_t), f->size, f);
+    for (int i = 0; i < f->size; ++i) {
+        printf("%c", buffer[i]);
+    }
+
+    
+    // Process *init = createProcess("a:/init");
+    // Process *app = createProcess("a:/app");
+    // ProcessList pl = process_list_new();
+    // process_list_add(&pl, init);
+    // process_list_add(&pl, app);
 
     // void *timer_isr = idt_get_gate(0x20);
     // printf("%p", timer_isr);
@@ -192,24 +198,24 @@ void kmain(struct MemoryMapInfo* mminfo, uint16_t mmentries)
     // idt_set_gate(0x20, (uint32_t)scheduler_interrupt, 0x8, 0x8e);
     // asm volatile("sti");
 
-    while (!process_list_is_empty(&pl)) {
-        Process *proc = pl.head->process;
-        int (*entry)() = proc->threads[0].entry;        
-        vmm_switch_pdirectory(proc->pdir);
-        asm volatile(
-            "lea .after_iret, %%eax\n"
-            "pushl %%eax\n"
-            "pushl %0\n"
-            "pushl %1\n"
-            "retf\n"
-            ".after_iret:"
-            :
-            : "i"(0x8), "m"(entry)
-        );
-        // entry();
-        vmm_restore_pdirectory();
-        process_list_pop_front(&pl);
-    }
+    // while (!process_list_is_empty(&pl)) {
+    //     Process *proc = pl.head->process;
+    //     int (*entry)() = proc->threads[0].entry;        
+    //     vmm_switch_pdirectory(proc->pdir);
+    //     asm volatile(
+    //         "lea .after_iret, %%eax\n"
+    //         "pushl %%eax\n"
+    //         "pushl %0\n"
+    //         "pushl %1\n"
+    //         "retf\n"
+    //         ".after_iret:"
+    //         :
+    //         : "i"(0x8), "m"(entry)
+    //     );
+    //     // entry();
+    //     vmm_restore_pdirectory();
+    //     process_list_pop_front(&pl);
+    // }
     puts("\n[#] Kernel end");
     // uint32_t esp;
     // asm volatile("movl %%esp, %0" : "=r"(esp));

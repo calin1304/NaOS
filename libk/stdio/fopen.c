@@ -4,5 +4,5 @@
 
 FILE *fopen(const char *filename, const char *mode)
 {
-    return vfs_fopen(filename, mode);
+    return vfsFOpen(filename, mode);
 }
