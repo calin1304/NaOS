@@ -6,7 +6,8 @@ export CFLAGS := -fno-builtin \
 		 -ffreestanding \
 		 -nostdlib \
 		 -Wall -Wextra -I ${abspath .} \
-		 -m32
+		 -m32 \
+		 -fno-pie
 export LDFLAGS := -L $(abspath ./libk)
 
 OBJECT_FILES := .obj/stage2.o \
@@ -18,18 +19,17 @@ OBJECT_FILES := .obj/stage2.o \
 
 BOOTLOADER := bootloader/bootloader
 KERNEL := kernel/kernel
-DISK_MOUNT_LOCATION := /mnt/loop0
+DISK_MOUNT_LOCATION := build/floppy_mnt
 
 .PHONY: all
 all: bootloader libk kernel
 
 .PHONY: floppy
 floppy: build build/floppy.img
-	mount /dev/loop0
+	mount /dev/loop0 $(DISK_MOUNT_LOCATION)
 	cp $(KERNEL) $(DISK_MOUNT_LOCATION)
 	cp res/welcome $(DISK_MOUNT_LOCATION)
-	cp app $(DISK_MOUNT_LOCATION)
-	cp init $(DISK_MOUNT_LOCATION)
+	cp apps/* $(DISK_MOUNT_LOCATION)
 	umount /dev/loop0
 	dd if=$(BOOTLOADER) of=build/floppy.img seek=0 count=1 conv=notrunc
 
