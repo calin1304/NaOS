@@ -20,5 +20,8 @@ char* strtok(char *s, const char *delims)
     while (*currPos == '\0' && currPos < stringEnd) {
         currPos += 1;
     }
+    if (currPos == stringEnd){
+        return NULL;
+    }
     return currPos;
 }
