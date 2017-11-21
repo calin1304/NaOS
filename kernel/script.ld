@@ -1,9 +1,8 @@
 ENTRY(_start);
-OUTPUT_FORMAT(binary);
-OUTPUT(kernel);
+OUTPUT_FORMAT(elf32-i386);
 
 SECTIONS {
-    .text 0x10000 : {
+    .text 0x100000 : {
         .obj/stage2.o (.text);
         * (.text)
     }

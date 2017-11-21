@@ -102,10 +102,14 @@ loadRootDirectory:
 			cmpsb
 			jnz .next
 			loop .loop
-		.computeStage2StartCluster:			
+		.computeStage2StartCluster:
 			add si, 0xf
 			mov ax, [si]
 			mov [currentCluster], ax
+			add si, 2
+			mov eax, DWORD [si]
+			mov DWORD [stage2Size], eax
+			mov ax, [currentCluster]
 			jmp loadKernel
 		.next:
 			dec cx
@@ -181,14 +185,16 @@ stage2Loaded:
 		mov ebp, 0x7c00
 		push esi
 		push DWORD MEMORY_MAP_BUFFER
-
+		push DWORD KERNEL_LONG_ADDR
+		push DWORD [stage2Size]
 		jmp 0x8:KERNEL_LONG_ADDR
 
 exit:
 	cli
 	hlt	
 
-stage2Filename: db "KERNEL     "
+stage2Filename: db "KER     BIN"
+stage2Size:		dd 0
 driveNumber: 	db 0
 
 currentCluster:	dw 0

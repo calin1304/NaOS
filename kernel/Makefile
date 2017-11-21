@@ -4,14 +4,17 @@ BUILDDIR := .obj
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:%.c=%.o))
 LIBS := -lk
-TARGET := kernel
-LDFLAGS := -L./libk
+TARGET := ker.bin
+LDFLAGS := -L./libk #-Map kernel.map
 
 .PHONY: all
-all: libk $(TARGET)
+all: $(TARGET)
 
-$(TARGET): $(OBJECTS) $(BUILDDIR)/stage2.o
-	ld -m elf_i386 -T script.ld $(LDFLAGS) $^ $(LIBS)
+$(TARGET): libk entry kernel
+	./mkimg.py -e entry/entry -f kernel -o $(TARGET)
+
+kernel: $(OBJECTS) $(BUILDDIR)/stage2.o
+	ld -o $@ -m elf_i386 -T script.ld $(LDFLAGS) $^ $(LIBS)
 
 $(BUILDDIR)/stage2.o: $(SRCDIR)/stage2.asm
 	@mkdir -p $(dir $@)
@@ -25,9 +28,14 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 libk:
 	$(MAKE) -C libk
 
+.PHONY: entry
+entry:
+	$(MAKE) -C entry
+
 .PHONY: clean
 clean:
 	$(MAKE) -C libk clean
+	$(MAKE) -C entry clean
 	rm -f .obj/*.o
 	rm -f $(OBJECTS)
-	rm -f $(TARGET)
+	rm -f kernel

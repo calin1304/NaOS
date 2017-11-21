@@ -18,7 +18,7 @@ OBJECT_FILES := .obj/stage2.o \
 				.obj/io.o .obj/pic.o .obj/gdt.o .obj/clock.o .obj/malloc.o .obj/ata.o .obj/fat12.o
 
 BOOTLOADER := bootloader/bootloader
-KERNEL := kernel/kernel
+KERNEL := kernel/ker.bin
 DISK_MOUNT_LOCATION := build/floppy_mnt
 
 .PHONY: all
