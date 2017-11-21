@@ -15,6 +15,7 @@ $(TARGET): libk entry kernel
 
 kernel: $(OBJECTS) $(BUILDDIR)/stage2.o
 	ld -o $@ -m elf_i386 -T script.ld $(LDFLAGS) $^ $(LIBS)
+	./mksymlist.py kernel symbols
 
 $(BUILDDIR)/stage2.o: $(SRCDIR)/stage2.asm
 	@mkdir -p $(dir $@)
