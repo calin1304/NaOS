@@ -57,6 +57,10 @@ void pmm_init(struct MemoryMapInfo *mm, uint16_t entries, paddr bitmap)
         }
     }
     pmm_set_block(0);
+    //  Marking 10 pages from kernel load location as used so the pmm does
+    // not allocate them when calling pmm_alloc_block.
+    //  TODO: Get kernel image size and mark size / PAGE_SIZE pages as used
+    pmm_set_blocks(PMM_BLOCK_FROM_PADDR(0x100000), 10);
 }
 
 unsigned int pmm_get_first_free_block()
