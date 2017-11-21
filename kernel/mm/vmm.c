@@ -225,7 +225,7 @@ int pdir_vaddr_is_mapped(PDirectory *dir, vaddr addr)
 paddr pdir_get_paddr(PDirectory *dir, vaddr virt)
 {
     PDEntry *pde = &(dir->entries[PDIR_INDEX(virt)]);
-    PTable *t = pde_get_paddr(*pde);
+    PTable *t = (PTable*)pde_get_paddr(*pde);
     PTEntry *pte = &(t->entries[PTABLE_INDEX(virt)]);
     return pte_get_paddr(*pte);
 }
@@ -235,6 +235,8 @@ void* vmm_get_phys_addr(vaddr virt)
     PDEntry *pde = &(currentDirectory->entries[PDIR_INDEX(virt)]);
     PTable *pt = (PTable*)pde_get_paddr(*pde);
     PTEntry *pte = &(pt->entries[PTABLE_INDEX(virt)]);
+    return (void*)(pte_get_paddr(*pte) + PAGE_OFFSET(virt));
+}
 
 void vmm_mapPages(PDirectory *pdir, paddr phys, vaddr virt, size_t count)
 {
