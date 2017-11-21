@@ -1,4 +1,4 @@
-CFLAGS := $(CFLAGS) -I./include -I./libk/include
+CFLAGS := $(CFLAGS) -I./include -I./libk/include -g
 SRCDIR := .
 BUILDDIR := .obj
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
@@ -16,6 +16,8 @@ $(TARGET): libk entry kernel
 kernel: $(OBJECTS) $(BUILDDIR)/stage2.o
 	ld -o $@ -m elf_i386 -T script.ld $(LDFLAGS) $^ $(LIBS)
 	./mksymlist.py kernel symbols
+	#objcopy --only-keep-debug $@ -o kernel.dbg
+	objcopy --strip-debug $@
 
 $(BUILDDIR)/stage2.o: $(SRCDIR)/stage2.asm
 	@mkdir -p $(dir $@)
