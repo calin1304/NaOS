@@ -2,6 +2,7 @@
 #define VMM_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 #include "kernel/include/mm/pmm.h"
 
@@ -61,6 +62,7 @@ int         vmm_switch_pdirectory   (PDirectory *dir);
 void        vmm_restore_pdirectory  ();
 PDirectory* vmm_get_directory       ();
 void        vmm_map_page            (void *phys, void *virt);
+void        vmm_mapPages            (PDirectory *pdir, paddr phys, vaddr virt, size_t count);
 void        vmm_init                ();
 int         vmm_vaddr_is_mapped     (vaddr);
 void        vmm_free_vaddr_page     (vaddr);

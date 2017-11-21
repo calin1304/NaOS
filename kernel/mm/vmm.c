@@ -235,5 +235,12 @@ void* vmm_get_phys_addr(vaddr virt)
     PDEntry *pde = &(currentDirectory->entries[PDIR_INDEX(virt)]);
     PTable *pt = (PTable*)pde_get_paddr(*pde);
     PTEntry *pte = &(pt->entries[PTABLE_INDEX(virt)]);
-    return pte_get_paddr(*pte) + PAGE_OFFSET(virt);
+
+void vmm_mapPages(PDirectory *pdir, paddr phys, vaddr virt, size_t count)
+{
+    for (size_t i = 0; i < count; ++i) {
+        pdir_map_page(pdir, phys, virt);
+        virt += PAGE_SIZE;
+        phys += PAGE_SIZE;
+    }
 }
