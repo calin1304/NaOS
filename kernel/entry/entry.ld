@@ -1,9 +1,9 @@
-ENTRY(_start);
-OUTPUT_FORMAT(elf32-i386);
+OUTPUT_FORMAT(binary);
 
 SECTIONS {
-    .text 0x100000 : {
-        .obj/stage2.o (.text);
+    .text 0x10000 : {
+        start.o (.text);
+        entry.o (.text);
         * (.text)
     }
     .rodata BLOCK(4K) : ALIGN(4K) {

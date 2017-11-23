@@ -16,8 +16,8 @@
 
 #include "process/process.h"
 
-#include "libk/include/stdio.h"
-#include "libk/include/stdlib.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 extern Console console;
 extern Clock clock;
@@ -99,29 +99,11 @@ ProcessList process_list_new()
     return ret;
 }
 
-// extern void __isr_timer();
-
-// ProcessListNode *currRunning;
-
-// void scheduler_interrupt()
-// {
-//     if (currRunning) {
-//         Process *proc = currRunning->process;
-//         proc->ticks += 1;
-//         if (proc->ticks == 5) {
-
-//         }
-//     }
-//     asm volatile("leave");
-//     asm volatile(
-//         "jmp %0"
-//         :
-//         : "r"(__isr_timer)
-//     );
-// }
-
 void kmain(struct MemoryMapInfo* mminfo, uint16_t mmentries)
 {
+    // Make a NULL stack frame to signal backtrace to stop
+    asm volatile("movl $0, -4(%ebp)");
+
     uint16_t count = 1193180 / 100;
     outb(0x43, 0x36);
     outb(0x40, count & 0xffff);
@@ -169,65 +151,10 @@ void kmain(struct MemoryMapInfo* mminfo, uint16_t mmentries)
     drive.ports = ports;
 
     fat12_init(0, &drive);
-    // FILE *f = (FILE*)fopen("a:/welcome", "");
-    // if (!f) {
-    //     printf("Could not open file\n");
-    // }
-    // printf("%s %d bytes\n", f->name, f->size);
-    // uint8_t *buffer = malloc(f->size);
-    // int n = fread(buffer, sizeof(uint8_t), f->size, f);
-    // printf("%d bytes read\n", n);
-    // for (int i = 0; i < f->size; ++i) {
-    //     printf("%c", buffer[i]);
-    // }
-    Process *init = createProcess("a:/init");
-    Process *app = createProcess("a:/app");
-    ProcessList pl = process_list_new();
-    process_list_add(&pl, init);
-    process_list_add(&pl, app);
 
-    // void *timer_isr = idt_get_gate(0x20);
-    // printf("%p", timer_isr);
-    // asm volatile("cli");
-    // idt_set_gate(0x20, (uint32_t)scheduler_interrupt, 0x8, 0x8e);
-    // asm volatile("sti");
-
-    while (!process_list_is_empty(&pl)) {
-        Process *proc = pl.head->process;
-        int (*entry)() = proc->threads[0].entry;        
-        vmm_switch_pdirectory(proc->pdir);
-        asm volatile(
-            "lea .after_iret, %%eax\n"
-            "pushl %%eax\n"
-            "pushl %0\n"
-            "pushl %1\n"
-            "retf\n"
-            ".after_iret:"
-            :
-            : "i"(0x8), "m"(entry)
-        );
-        // entry();
-        vmm_restore_pdirectory();
-        process_list_pop_front(&pl);
-    }
+    FAT12FileSystem *fat12FS = getFAT12Driver();
+    vfsInit();
+    vfsMount("/", fat12FS);
     puts("\n[#] Kernel end");
-    // uint32_t esp;
-    // asm volatile("movl %%esp, %0" : "=r"(esp));
-    // install_tss(0x10, esp);
-    // enter_userspace();
-    // int n = 200;
-    // int m = 320;
-    // uint8_t *vga = (uint8_t*)0xA0000;
-    // for (int i = 0; i < n; ++i) {
-    //     for (int j = 0; j < m; ++j) {
-    //         vga[i*m + j] = 1;
-    //     }
-    // }
-
-    // for (int i = n/3; i < ((n/3) << 1); ++i) {
-    //     for (int j = m/3; j < ((m/3) << 1); ++j) {
-    //         vga[i*m + j] = 2;
-    //     }
-    // }
     for(;;);
 }

@@ -2,7 +2,7 @@
 #include "drivers/ata/ata.h"
 #include "clock.h"
 
-#include "libk/include/string.h"
+#include <string.h>
 #include "mm/pmm.h"
 #include "mm/vmm.h"
 #include "kernel/include/vfs.h"
@@ -27,7 +27,11 @@ void fat12_init(unsigned int volIdx, ATADrive *drive)
     fat12FS.bootSector = *((struct FAT12BootSector*)buffer);
     fat12FS.drive = *drive;
     // free(buffer);
-    vfs_registerFileSystem(volIdx, (FileSystem*)&fat12FS);
+}
+
+FAT12FileSystem* getFAT12Driver()
+{
+    return &fat12FS;
 }
 
 static void convertFilenameTo83(const char *filename, char *name, char *extension)

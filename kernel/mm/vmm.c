@@ -1,6 +1,6 @@
 #include "mm/vmm.h"
 
-#include "libk/include/string.h"
+#include <string.h>
 
 #define PDIR_INDEX(x) (((x) >> 22) & 0x3ff)
 #define PTABLE_INDEX(x) (((x) >> 12) & 0x3ff)
@@ -225,7 +225,7 @@ int pdir_vaddr_is_mapped(PDirectory *dir, vaddr addr)
 paddr pdir_get_paddr(PDirectory *dir, vaddr virt)
 {
     PDEntry *pde = &(dir->entries[PDIR_INDEX(virt)]);
-    PTable *t = pde_get_paddr(*pde);
+    PTable *t = (PTable*)pde_get_paddr(*pde);
     PTEntry *pte = &(t->entries[PTABLE_INDEX(virt)]);
     return pte_get_paddr(*pte);
 }
@@ -235,5 +235,14 @@ void* vmm_get_phys_addr(vaddr virt)
     PDEntry *pde = &(currentDirectory->entries[PDIR_INDEX(virt)]);
     PTable *pt = (PTable*)pde_get_paddr(*pde);
     PTEntry *pte = &(pt->entries[PTABLE_INDEX(virt)]);
-    return pte_get_paddr(*pte) + PAGE_OFFSET(virt);
+    return (void*)(pte_get_paddr(*pte) + PAGE_OFFSET(virt));
+}
+
+void vmm_mapPages(PDirectory *pdir, paddr phys, vaddr virt, size_t count)
+{
+    for (size_t i = 0; i < count; ++i) {
+        pdir_map_page(pdir, phys, virt);
+        virt += PAGE_SIZE;
+        phys += PAGE_SIZE;
+    }
 }

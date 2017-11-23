@@ -7,7 +7,7 @@
 #include "clock.h"
 #include "kernel/include/syscalls.h"
 
-#include "libk/include/stdio.h"
+#include <stdio.h>
 
 static void idt_load(struct IDTPtr *idt_ptr)
 {
@@ -81,9 +81,9 @@ void isr13()
     asm volatile ("hlt");
 }
 
-void isr14(uint32_t errorCode)
+void isr14(uint32_t errorCode, uint32_t eip, uint16_t cs)
 {
-    printf("[!] Exception 14: Page fault: ");
+    printf("[!] Exception 14 - Page fault - ");
     
     if (errorCode & 0x1) {
         printf("Page-protection violation ");
@@ -107,7 +107,8 @@ void isr14(uint32_t errorCode)
     uint32_t faultAddr;
     // __asm__("movl %cr2, %eax");
     __asm__("movl %%cr2, %0" : "=r"(faultAddr));
-    printf("\nFaulting address: %x\n", faultAddr);
+    printf("\nAddress: %x\n", faultAddr);
+    printf("cs = %x , eip = %x\n", cs, eip);
     asm volatile ("cli");
     asm volatile ("hlt");
 }

@@ -6,6 +6,7 @@ global _start
 
 SECTION .text
 _start:
+	pop eax
 	call kmain
 	jmp $
 
