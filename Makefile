@@ -1,21 +1,8 @@
-export CC := gcc
+export TARGET := i686-elf
+export CC := $(TARGET)-gcc
+export LD := $(TARGET)-ld
 export ASM := nasm
-export CFLAGS := -fno-builtin \
-		 -fno-stack-protector \
-		 -nostartfiles \
-		 -ffreestanding \
-		 -nostdlib \
-		 -Wall -Wextra -I ${abspath .} \
-		 -m32 \
-		 -fno-pie
-export LDFLAGS := -L $(abspath ./libk)
-
-OBJECT_FILES := .obj/stage2.o \
-				.obj/kmain.o \
-				.obj/console.o \
-				.obj/idt.o \
-				.obj/string.o \
-				.obj/io.o .obj/pic.o .obj/gdt.o .obj/clock.o .obj/malloc.o .obj/ata.o .obj/fat12.o
+export CFLAGS := -Wall -Wextra -I ${abspath .} -ffreestanding
 
 BOOTLOADER := bootloader/bootloader
 KERNEL := kernel/ker.bin

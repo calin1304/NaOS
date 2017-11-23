@@ -3,9 +3,9 @@ SRCDIR := .
 BUILDDIR := .obj
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:%.c=%.o))
-LIBS := -lk
+LIBS := -lgcc -lk
 TARGET := ker.bin
-LDFLAGS := -L./libk #-Map kernel.map
+LDFLAGS := -nostdlib -L./libk #-Map kernel.map
 
 .PHONY: all
 all: $(TARGET)
@@ -14,7 +14,7 @@ $(TARGET): libk entry kernel
 	./mkimg.py -e entry/entry -f kernel -o $(TARGET)
 
 kernel: $(OBJECTS) $(BUILDDIR)/stage2.o
-	ld -o $@ -m elf_i386 -T script.ld $(LDFLAGS) $^ $(LIBS)
+	$(CC) -o $@ -T script.ld $(LDFLAGS) $^ $(LIBS)
 	./mksymlist.py kernel symbols
 	#objcopy --only-keep-debug $@ -o kernel.dbg
 	objcopy --strip-debug $@
