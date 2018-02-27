@@ -2,6 +2,7 @@ ENTRY(_start)
 
 SECTIONS
 {	. = 1M;
+	_symbol_KERNEL_START = .;
 	.text BLOCK(4K) : ALIGN(4K)
 	{
 		*(.multiboot)
@@ -20,4 +21,5 @@ SECTIONS
 		*(COMMON)
 		*(.bss)
 	}
+	_symbol_KERNEL_END = .;
 }
