@@ -10,6 +10,9 @@ uint32_t pmmBitmapBlockCount;
 #define PMM_BLOCK_FROM_PADDR(x) ((unsigned int)(x) / PMM_BLOCK_SIZE)
 #define PMM_BLOCK_ADDR(x) ((void*)((x) * PMM_BLOCK_SIZE));
 
+extern void _symbol_KERNEL_START;
+extern void _symbol_KERNEL_END;
+
 void pmm_set_block(int i)
 {
     uint32_t *p = pmmBitmap + i / sizeof(uint32_t);
@@ -41,26 +44,33 @@ unsigned int pmm_test_block(unsigned int i)
     return pmmBitmap[i/sizeof(uint32_t)] & (1 << i%(sizeof(uint32_t)));
 }
 
-void pmm_init(struct MemoryMapInfo *mm, uint16_t entries, paddr bitmap)
+void pmm_init(multiboot_info_t *mbt)
 {    
-    pmmBitmap = (uint32_t*)bitmap;
-    pmm_set_block(PMM_BLOCK_FROM_PADDR(bitmap));
+    pmmBitmap = &_symbol_KERNEL_END;
+    pmm_set_block(PMM_BLOCK_FROM_PADDR(pmmBitmap));
     pmmBitmapBlockCount = 0;
-    for (unsigned int i = 0; i < entries; ++i) {
-        pmmBitmapBlockCount += mm[i].length;
+    multiboot_memory_map_t *mmap = mbt->mmap_addr;
+    while (mmap < mbt->mmap_addr + mbt->mmap_length) {
+        pmmBitmapBlockCount += mmap->len;
+        mmap = (multiboot_memory_map_t*) ((unsigned int)mmap + mmap->size + sizeof(mmap->size));
     }
     pmmBitmapBlockCount /= PMM_BLOCK_SIZE;
     memset(pmmBitmap, 0xffffffff, pmmBitmapBlockCount/sizeof(uint32_t));
-    for (unsigned int i = 1; i < entries; ++i) {
-        if (mm[i].type == 0x1) {
-            pmm_unset_blocks(PMM_BLOCK_FROM_PADDR(mm[i].base), mm[i].length / PMM_BLOCK_SIZE);
+    // for (unsigned int i = 1; i < entries; ++i) {
+    //     if (mm[i].type == 0x1) {
+    //         pmm_unset_blocks(PMM_BLOCK_FROM_PADDR(mm[i].base), mm[i].length / PMM_BLOCK_SIZE);
+    //     }
+    // }
+    mmap = mbt->mmap_addr;
+    while (mmap < mbt->mmap_addr + mbt->mmap_length) {
+        if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE) {
+            pmm_unset_blocks(PMM_BLOCK_FROM_PADDR(mmap->addr), mmap->len / PMM_BLOCK_SIZE);
         }
+        mmap = (multiboot_memory_map_t*) ((unsigned int)mmap + mmap->size + sizeof(mmap->size));
     }
     pmm_set_block(0);
-    //  Marking 10 pages from kernel load location as used so the pmm does
-    // not allocate them when calling pmm_alloc_block.
-    //  TODO: Get kernel image size and mark size / PAGE_SIZE pages as used
-    pmm_set_blocks(PMM_BLOCK_FROM_PADDR(0x100000), 10);
+    int kernel_blocks = ((uintptr_t)&_symbol_KERNEL_END - (uintptr_t)&_symbol_KERNEL_START + 1) / PMM_BLOCK_SIZE;
+    pmm_set_blocks(PMM_BLOCK_FROM_PADDR(&_symbol_KERNEL_START), kernel_blocks);
 }
 
 unsigned int pmm_get_first_free_block()

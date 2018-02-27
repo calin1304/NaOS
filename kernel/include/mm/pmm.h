@@ -4,10 +4,11 @@
 #include <stdint.h>
 
 #include "kernel/include/mm/memory.h"
+#include "multiboot.h"
 
 typedef uint32_t paddr;
 
-void pmm_init(struct MemoryMapInfo*, uint16_t entries, paddr bitmap);
+void pmm_init(multiboot_info_t *mbt);
 void* pmm_alloc_block();
 void pmm_free_block(void*);
 
