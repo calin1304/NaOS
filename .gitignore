@@ -5,3 +5,7 @@ build
 .vscode
 bx_enh_dbg.ini
 bochsrc.bxrc
+*.o
+*.iso
+*.bin
+isodir

@@ -5,10 +5,6 @@ extern kmain
 global _start
 
 SECTION .text
-_start:
-	pop eax
-	call kmain
-	jmp $
 
 %macro define_isr_wrapper 1
 global __%1
