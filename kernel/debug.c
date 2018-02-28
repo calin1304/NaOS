@@ -15,3 +15,15 @@ void backtrace()
         caller = ebp[1];
     }
 }
+
+void dump_regs()
+{
+    DUMP_REG_32("eax");
+    DUMP_REG_32("ebx");
+    DUMP_REG_32("ecx");
+    DUMP_REG_32("edx");
+    DUMP_REG_32("esi");
+    DUMP_REG_32("edi");
+    DUMP_REG_32("esp");
+    DUMP_REG_32("ebp");
+}
