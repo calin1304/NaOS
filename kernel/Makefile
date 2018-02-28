@@ -1,4 +1,4 @@
-CFLAGS := $(CFLAGS) -I./ -I./include -I./libk/include -g
+CFLAGS := $(CFLAGS) -I./ -I./include -I./libk/include -g -mno-80387
 SRCDIR := .
 BUILDDIR := .obj
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
@@ -13,15 +13,11 @@ all: $(TARGET)
 $(TARGET): libk kernel
 	mv kernel $@
 
-kernel: $(BUILDDIR)/isr.o $(OBJECTS) boot.o
+kernel: $(OBJECTS) boot.o
 	$(CC) -o $@ -T linker.ld $(LDFLAGS) $^ $(LIBS)
 
 boot.o: boot.asm
 	nasm -felf32 boot.asm -o boot.o
-
-$(BUILDDIR)/isr.o: $(SRCDIR)/isr.asm
-	@mkdir -p $(dir $@)
-	$(ASM) -o $@ -f elf32 $<
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(dir $@)
