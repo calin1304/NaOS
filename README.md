@@ -1,14 +1,23 @@
-A small operating system
+# NaOS
 
-How to run it (will make proper build scripts soon)
-===
+Not an actual operating system
 
-```
-mkdir -p build/floppy_mount
-mkdir obj
-touch build/floppy.img
-sudo /dev/losetup0 build/floppy.img
-make floppy
-make
-qemu-system-i386 -fda build/floppy.img
-```
+## Getting started
+
+### Prerequisites
+
+- nasm
+- gcc^7.0
+- make
+
+### Running
+
+`make`
+
+`qemu-system-i386 -cdrom naos.iso`
+
+## Authors
+- Calin Nicolau
+
+## Acknowledgments
+- [osdev wiki](https://wiki.osdev.org)
