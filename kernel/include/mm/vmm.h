@@ -16,11 +16,11 @@ typedef uint32_t PDEntry;
 
 typedef struct PTable_ {
     PTEntry entries[PAGES_PER_TABLE];
-} PTable;
+} PTable __attribute__((aligned(PAGE_SIZE)));
 
 typedef struct PDirectory_ {
     PDEntry entries[PAGES_PER_DIR];
-} PDirectory;
+} PDirectory __attribute__((aligned(PAGE_SIZE)));
 
 enum PTE_FLAGS {
     PTE_PRESENT     = 0x1,

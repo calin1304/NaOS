@@ -7,6 +7,7 @@
 #define PAGE_OFFSET(x) ((x) & 0xfff)
 #define PAGE_PHYS_ADDR(x) (*(x) & (~0xfff))
 
+PDirectory kdir;
 PDirectory *currentDirectory = 0;
 PDirectory *oldDirectory = 0;
 
@@ -139,15 +140,9 @@ void vmm_map_page(void *phys, void *virt)
 
 void vmm_init()
 {
-    PDirectory *dir = (PDirectory*)pmm_alloc_block();
-    if (!dir) {
-        asm("cli\nhlt");
-        return;
-    }
-    memset(dir, 0, sizeof(PDirectory));
-    vmm_identity_map(dir, 0x0, 1024);
+    vmm_identity_map(&kdir, 0x0, 1024);
 
-    vmm_switch_pdirectory(dir);
+    vmm_switch_pdirectory(&kdir);
     pmm_enable_paging();
 }
 
