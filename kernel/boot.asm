@@ -23,6 +23,8 @@ stack_top:
 
 _start:
 	mov $stack_top, %esp
+	pushl %eax
+	pushl %ebx
 	call kmain
 	cli
 1:	hlt

@@ -49,22 +49,17 @@ void pmm_init(multiboot_info_t *mbt)
     pmmBitmap = &_symbol_KERNEL_END;
     pmm_set_block(PMM_BLOCK_FROM_PADDR(pmmBitmap));
     pmmBitmapBlockCount = 0;
-    multiboot_memory_map_t *mmap = mbt->mmap_addr;
+    multiboot_memory_map_t *mmap = (multiboot_memory_map_t*)mbt->mmap_addr;    
     while (mmap < mbt->mmap_addr + mbt->mmap_length) {
-        pmmBitmapBlockCount += mmap->len;
+        pmmBitmapBlockCount += mmap->len_low;
         mmap = (multiboot_memory_map_t*) ((unsigned int)mmap + mmap->size + sizeof(mmap->size));
     }
     pmmBitmapBlockCount /= PMM_BLOCK_SIZE;
     memset(pmmBitmap, 0xffffffff, pmmBitmapBlockCount/sizeof(uint32_t));
-    // for (unsigned int i = 1; i < entries; ++i) {
-    //     if (mm[i].type == 0x1) {
-    //         pmm_unset_blocks(PMM_BLOCK_FROM_PADDR(mm[i].base), mm[i].length / PMM_BLOCK_SIZE);
-    //     }
-    // }
     mmap = mbt->mmap_addr;
     while (mmap < mbt->mmap_addr + mbt->mmap_length) {
         if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE) {
-            pmm_unset_blocks(PMM_BLOCK_FROM_PADDR(mmap->addr), mmap->len / PMM_BLOCK_SIZE);
+            pmm_unset_blocks(PMM_BLOCK_FROM_PADDR(mmap->addr_low), mmap->len_low / PMM_BLOCK_SIZE);
         }
         mmap = (multiboot_memory_map_t*) ((unsigned int)mmap + mmap->size + sizeof(mmap->size));
     }

@@ -30,7 +30,9 @@ void kmain(multiboot_info_t *mbt, unsigned int magic)
     init_pics(0x20, 0x28);
     outb(PIC1_DATA, 0xFC); // Umask interrupts
     
-    // idt_init();
+    idt_init();
+    pmm_init(mbt);
+    vmm_init();
 
     console_init(&console);
     puts("\n[#] Kernel end");
