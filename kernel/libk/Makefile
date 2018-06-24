@@ -1,5 +1,4 @@
-CFLAGS := $(CFLAGS) -I ..
-AR := ar
+CFLAGS := $(CFLAGS) -I ../include
 BUILDDIR := .obj
 SRCDIR := .
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
