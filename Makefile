@@ -1,7 +1,7 @@
 export ARCH := i686-elf
 export CC := $(ARCH)-gcc
 export LD := $(ARCH)-ld
-export ASM := nasm
+export AS := $(ARCH)-as
 export CFLAGS := -Wall -Wextra -I ${abspath .} -ffreestanding
 
 KERNEL := kernel/ker.bin

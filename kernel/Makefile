@@ -17,7 +17,7 @@ kernel: $(OBJECTS) boot.o
 	$(CC) -o $@ -T linker.ld $(LDFLAGS) $^ $(LIBS)
 
 boot.o: boot.asm
-	nasm -felf32 boot.asm -o boot.o
+	$(AS) $(AS_FLAGS) $^ -o $@
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(dir $@)
