@@ -2,14 +2,14 @@
 #include "drivers/ata/ata.h"
 #include "clock.h"
 
-#include <string.h>
+#include <libk/string.h>
 #include "mm/pmm.h"
 #include "mm/vmm.h"
 #include "kernel/include/vfs.h"
 #include "utils.h"
 
-#include <stdio.h>
-#include <ctype.h>
+#include <libk/stdio.h>
+#include <libk/ctype.h>
 
 #define ROOT_DIRECTORY_START_LBA 19
 #define FAT_START_LBA 1

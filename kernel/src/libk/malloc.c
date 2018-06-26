@@ -1,4 +1,4 @@
-#include "malloc.h"
+#include "libk/malloc.h"
 
 #include "kernel/include/mm/pmm.h"
 #include "kernel/include/mm/vmm.h"

@@ -1,4 +1,4 @@
-#include <ctype.h>
+#include <libk/ctype.h>
 
 int isalpha(int c)
 {

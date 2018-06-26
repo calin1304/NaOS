@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <libk/stdio.h>
 #include <stdarg.h>
 #include "kernel/include/console.h"
 #include "kernel/include/vfs.h"

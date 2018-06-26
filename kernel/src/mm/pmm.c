@@ -1,6 +1,6 @@
 #include "mm/pmm.h"
 
-#include <string.h>
+#include <libk/string.h>
 
 #define PMM_BLOCK_SIZE 4096
 

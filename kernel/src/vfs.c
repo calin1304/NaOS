@@ -1,8 +1,8 @@
 #include "kernel/include/vfs.h"
 
-#include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
+#include <libk/ctype.h>
+#include <libk/string.h>
+#include <libk/stdlib.h>
 
 size_t vfs_fread(void *ptr, size_t size, size_t count, FILE* f)
 {

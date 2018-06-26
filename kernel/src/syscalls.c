@@ -1,6 +1,6 @@
 #include "kernel/include/syscalls.h"
 
-#include <stdio.h>
+#include <libk/stdio.h>
 
 void *syscalls[] = {
     syscall_puts,

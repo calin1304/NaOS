@@ -7,7 +7,7 @@
 #include "clock.h"
 #include "kernel/include/syscalls.h"
 
-#include <stdio.h>
+#include <libk/stdio.h>
 
 #ifdef __x86_64__
 typedef unsigned long long int uword_t;

@@ -11,8 +11,8 @@
 
 #include "multiboot.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <libk/stdio.h>
+#include <libk/stdlib.h>
 
 void print_multiboot_info(multiboot_info_t *mbt)
 {

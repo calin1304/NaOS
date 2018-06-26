@@ -3,12 +3,12 @@ SRCDIR := src
 BUILDDIR := .obj
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:%.c=%.o))
-LIBS := -lgcc -lk
+LIBS := -lgcc
 TARGET := ker.bin
-LDFLAGS := -nostdlib -L./libk
+LDFLAGS := -nostdlib
 
 .PHONY: all
-all: libk $(TARGET)
+all: $(TARGET)
 
 $(TARGET): $(OBJECTS) $(BUILDDIR)/boot.o
 	$(CC) -o $@ -T linker.ld $(LDFLAGS) $^ $(LIBS)
@@ -21,10 +21,6 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c $(BUILDDIR)
 
 $(BUILDDIR):
 	mkdir $@
-
-.PHONY: libk
-libk:
-	$(MAKE) -C libk
 
 .PHONY: clean
 clean:

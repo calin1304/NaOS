@@ -1,6 +1,6 @@
 #include "gdt.h"
 
-#include <string.h>
+#include <libk/string.h>
 
 static void gdt_load(struct GDTPtr *ptr)
 {
