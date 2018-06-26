@@ -1,4 +1,5 @@
 CFLAGS := $(CFLAGS) -I ../include
+AR := $(ARCH)-ar
 BUILDDIR := .obj
 SRCDIR := .
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
@@ -11,9 +12,11 @@ all: $(TARGET)
 $(TARGET): $(OBJECTS)
 	$(AR) rcs $@ $(OBJECTS)
 
-$(BUILDDIR)/%.o: %.c
-	@mkdir -p $(dir $@)
+$(BUILDDIR)/%.o: %.c $(BUILDDIR)
 	$(CC) -c -o $@ $(CFLAGS) $<
+
+$(BUILDDIR):
+	@mkdir $@
 
 .PHONY: clean
 clean:

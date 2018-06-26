@@ -8,20 +8,19 @@ TARGET := ker.bin
 LDFLAGS := -nostdlib -L./libk
 
 .PHONY: all
-all: $(TARGET)
+all: libk $(TARGET)
 
-$(TARGET): libk kernel
-	mv kernel $@
-
-kernel: $(OBJECTS) boot.o
+$(TARGET): $(OBJECTS) boot.o
 	$(CC) -o $@ -T linker.ld $(LDFLAGS) $^ $(LIBS)
 
 boot.o: boot.asm
 	$(AS) $(AS_FLAGS) $^ -o $@
 
-$(BUILDDIR)/%.o: $(SRCDIR)/%.c
-	@mkdir -p $(dir $@)
+$(BUILDDIR)/%.o: $(SRCDIR)/%.c $(BUILDDIR)
 	$(CC) -c -o $@ $(CFLAGS) $<
+
+$(BUILDDIR):
+	mkdir $@
 
 .PHONY: libk
 libk:
@@ -30,8 +29,7 @@ libk:
 .PHONY: clean
 clean:
 	$(MAKE) -C libk clean
-	$(MAKE) -C entry clean
-	rm -f .obj/*.o
+	rm -f $(BUILDDIR)/*.o
 	rm -f $(OBJECTS)
-	rm -f kernel
+	rm -f $(TARGET)
 	rm -f boot.o

@@ -12,8 +12,8 @@ all: kernel iso
 
 .PHONY: iso
 iso:	
-	cp -f $(KERNEL) $(ISODIR)/boot/
-	grub-mkrescue -o naos.iso $(ISODIR)
+	cp -f $(KERNEL) $(ISODIR)/
+	mkisofs -R -b boot/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table -o bootcd.iso isodir
 
 .PHONY: kernel
 kernel:
