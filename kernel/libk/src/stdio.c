@@ -1,8 +1,17 @@
+#include <stdio.h>
 #include <stdarg.h>
-
-#include "stdio.h"
-
 #include "kernel/include/console.h"
+#include "kernel/include/vfs.h"
+
+FILE *fopen(const char *filename, const char *mode)
+{
+    return vfsFOpen(filename, mode);
+}
+
+size_t fread(void *ptr, size_t size, size_t count, FILE *f)
+{
+    return vfs_fread(ptr, size, count, f);
+}
 
 const char *hexTable = "0123456789ABCDEF";
 
@@ -57,4 +66,14 @@ void printf(const char *format, ...)
     va_start(args, format);
     vprintf(format, args);
     va_end(args);
+}
+
+void putchar(int c)
+{
+    console_put_char(&console, (char)c);
+}
+
+void puts(const char *s)
+{
+    printf("%s\n", s);;
 }

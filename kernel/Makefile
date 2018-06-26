@@ -1,5 +1,5 @@
 CFLAGS := $(CFLAGS) -I./ -I./include -I./libk/include -g -mno-80387
-SRCDIR := .
+SRCDIR := src
 BUILDDIR := .obj
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:%.c=%.o))
@@ -10,10 +10,10 @@ LDFLAGS := -nostdlib -L./libk
 .PHONY: all
 all: libk $(TARGET)
 
-$(TARGET): $(OBJECTS) boot.o
+$(TARGET): $(OBJECTS) $(BUILDDIR)/boot.o
 	$(CC) -o $@ -T linker.ld $(LDFLAGS) $^ $(LIBS)
 
-boot.o: boot.asm
+$(BUILDDIR)/boot.o: $(SRCDIR)/boot.asm
 	$(AS) $(AS_FLAGS) $^ -o $@
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c $(BUILDDIR)
