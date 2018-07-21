@@ -1,7 +1,7 @@
 #include "libk/malloc.h"
 
-#include "kernel/include/mm/pmm.h"
-#include "kernel/include/mm/vmm.h"
+#include "mm/pmm.h"
+#include "mm/vmm.h"
 
 #define HEAP_START 0x006000000
 

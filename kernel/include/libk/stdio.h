@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-#include "kernel/include/vfs.h"
+#include "vfs.h"
 
 void putchar(int c);
 void puts(const char *s);

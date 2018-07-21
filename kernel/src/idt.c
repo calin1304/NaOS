@@ -5,7 +5,7 @@
 #include "io.h"
 #include "keyboard.h"
 #include "clock.h"
-#include "kernel/include/syscalls.h"
+#include "syscalls.h"
 
 #include <libk/stdio.h>
 

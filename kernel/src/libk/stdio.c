@@ -1,7 +1,7 @@
 #include <libk/stdio.h>
 #include <stdarg.h>
-#include "kernel/include/console.h"
-#include "kernel/include/vfs.h"
+#include "console.h"
+#include "vfs.h"
 
 FILE *fopen(const char *filename, const char *mode)
 {

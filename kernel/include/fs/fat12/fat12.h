@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include "drivers/ata/ata.h"
-#include "kernel/include/vfs.h"
+#include "vfs.h"
 
 struct FAT12BootSector {
     char ignore1[11];

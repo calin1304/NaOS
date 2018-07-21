@@ -5,7 +5,7 @@
 #include <libk/string.h>
 #include "mm/pmm.h"
 #include "mm/vmm.h"
-#include "kernel/include/vfs.h"
+#include "vfs.h"
 #include "utils.h"
 
 #include <libk/stdio.h>

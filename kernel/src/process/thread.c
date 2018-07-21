@@ -1,4 +1,4 @@
-#include "kernel/include/process/thread.h"
+#include "process/thread.h"
 
 Thread createThread(struct Process_ *parent, entryFn entry, int priority, int state)
 {

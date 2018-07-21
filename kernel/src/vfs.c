@@ -1,4 +1,4 @@
-#include "kernel/include/vfs.h"
+#include "vfs.h"
 
 #include <libk/ctype.h>
 #include <libk/string.h>

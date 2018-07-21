@@ -1,4 +1,4 @@
-#include "kernel/include/syscalls.h"
+#include "syscalls.h"
 
 #include <libk/stdio.h>
 
