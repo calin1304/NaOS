@@ -14,6 +14,55 @@ const uint16_t ata_cmd_port                 = 0x1f7;
 const uint16_t ata_primary_control_register = 0x3F6;
 
 
+// I/O ports
+#define ATA_DATA_REG(x)         (x)
+#define ATA_ERROR_REG(x)        ((x) + 1)
+#define ATA_FEATURES_REG(x)     ((x) + 1)
+#define ATA_SECTOR_COUNT_REG(x) ((x) + 2)
+#define ATA_LBA_LOW_REG(x)      ((x) + 3)
+#define ATA_LBA_MID_REG(x)      ((x) + 4)
+#define ATA_LBA_HIGH_REG(x)     ((x) + 5)
+#define ATA_DRIVE_SELECT_REG(x) ((x) + 6)
+#define ATA_STATUS_REG(x)       ((x) + 7)
+#define ATA_COMMAND_REG(x)      ((x) + 7)
+
+// Control ports
+#define ATA_ALTERNATE_STATUS_REG(x) (x)
+#define ATA_DEVICE_CONTROL_REG(x)   (x)
+#define ATA_DRIVE_ADDRESS_REG(x)    ((x) + 1 )
+
+// Status flags
+#define STATUS_ERR 0x01
+#define STATUS_DRQ 0x08
+#define STATUS_BSY 0x80
+
+// Control register flags
+#define CONTROL_nIEN 0x01
+#define CONTROL_SRST 0x02
+#define CONTROL_HOB  0x40
+
+// Used for 400ns delay mainly after drive select
+void ata_delay(uint16_t io_base)
+{
+    inb(ATA_STATUS_REG(io_base));
+    inb(ATA_STATUS_REG(io_base));
+    inb(ATA_STATUS_REG(io_base));
+    inb(ATA_STATUS_REG(io_base));
+}
+
+void ata_select_device(uint16_t io_base, uint16_t slave_select)
+{
+    uint8_t drive_select = slave_select != 0 ? 0xb0 : 0xa0;
+    outb(ATA_DRIVE_SELECT_REG(io_base), drive_select);
+    ata_delay(io_base);
+}
+
+void ata_reset_(uint16_t control_base)
+{
+    outb(ATA_DEVICE_CONTROL_REG(control_base), CONTROL_SRST);
+    outb(ATA_DEVICE_CONTROL_REG(control_base), 0);
+}
+
 void ata_reset(ATADrive *drive)
 {
     outb(drive->ports.primaryControlRegister, 4);
