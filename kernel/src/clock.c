@@ -1,6 +1,6 @@
 #include "clock.h"
 
-void clock_init(Clock *this)
+void clock_init(clock_t *this)
 {
     this->ticks = 0;
     this->seconds = 0;

@@ -121,7 +121,7 @@ void int0x80(uint32_t eax)
     apicall();
 }
 
-extern Clock clock;
+extern clock_t clock;
 
 void __attribute__((interrupt)) isr_timer(struct interrupt_frame *frame)
 {

@@ -3,14 +3,14 @@
 
 #include <stdint.h>
 
-typedef struct Clock_ {
+typedef struct clock_t {
     uint32_t ticks;
     uint32_t seconds;
-} Clock;
+} clock_t;
 
-Clock clock;
+clock_t clock;
 
-void clock_init(Clock *);
+void clock_init(clock_t *);
 void sleep(uint32_t milis);
 
 #endif
