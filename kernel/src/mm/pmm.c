@@ -4,8 +4,8 @@
 
 #define PMM_BLOCK_SIZE 4096
 
-uint32_t *pmmBitmap;
-uint32_t pmmBitmapBlockCount;
+uint32_t *pmm_bitmap;
+uint32_t pmm_bitmap_block_count;
 
 #define PMM_BLOCK_FROM_PADDR(x) ((unsigned int)(x) / PMM_BLOCK_SIZE)
 #define PMM_BLOCK_ADDR(x) ((void*)((x) * PMM_BLOCK_SIZE));
@@ -15,13 +15,13 @@ extern void _symbol_KERNEL_END;
 
 void pmm_set_block(int i)
 {
-    uint32_t *p = pmmBitmap + i / sizeof(uint32_t);
+    uint32_t *p = pmm_bitmap + i / sizeof(uint32_t);
     *p = (*p) | (1 << (i % sizeof(uint32_t)));
 }
 
 void pmm_unset_block(int i)
 {
-    uint32_t *p = pmmBitmap + i / sizeof(uint32_t);
+    uint32_t *p = pmm_bitmap + i / sizeof(uint32_t);
     *p = (*p) & (~(1 << (i % sizeof(uint32_t))));
 }
 
@@ -41,21 +41,21 @@ void pmm_unset_blocks(unsigned int i, unsigned int count)
 
 unsigned int pmm_test_block(unsigned int i)
 {
-    return pmmBitmap[i/sizeof(uint32_t)] & (1 << i%(sizeof(uint32_t)));
+    return pmm_bitmap[i/sizeof(uint32_t)] & (1 << i%(sizeof(uint32_t)));
 }
 
 void pmm_init(multiboot_info_t *mbt)
 {    
-    pmmBitmap = &_symbol_KERNEL_END;
-    pmm_set_block(PMM_BLOCK_FROM_PADDR(pmmBitmap));
-    pmmBitmapBlockCount = 0;
+    pmm_bitmap = &_symbol_KERNEL_END;
+    pmm_set_block(PMM_BLOCK_FROM_PADDR(pmm_bitmap));
+    pmm_bitmap_block_count = 0;
     multiboot_memory_map_t *mmap = (multiboot_memory_map_t*)mbt->mmap_addr;    
     while (mmap < mbt->mmap_addr + mbt->mmap_length) {
-        pmmBitmapBlockCount += mmap->len_low;
+        pmm_bitmap_block_count += mmap->len_low;
         mmap = (multiboot_memory_map_t*) ((unsigned int)mmap + mmap->size + sizeof(mmap->size));
     }
-    pmmBitmapBlockCount /= PMM_BLOCK_SIZE;
-    memset(pmmBitmap, 0xffffffff, pmmBitmapBlockCount/sizeof(uint32_t));
+    pmm_bitmap_block_count /= PMM_BLOCK_SIZE;
+    memset(pmm_bitmap, 0xffffffff, pmm_bitmap_block_count/sizeof(uint32_t));
     mmap = mbt->mmap_addr;
     while (mmap < mbt->mmap_addr + mbt->mmap_length) {
         if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE) {
@@ -70,7 +70,7 @@ void pmm_init(multiboot_info_t *mbt)
 
 unsigned int pmm_get_first_free_block()
 {
-    for (unsigned int i = 1; i < pmmBitmapBlockCount; ++i) {
+    for (unsigned int i = 1; i < pmm_bitmap_block_count; ++i) {
         if (pmm_test_block(i) == 0) {
             return i;
         }
