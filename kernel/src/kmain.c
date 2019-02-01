@@ -8,7 +8,8 @@
 #include "pic.h"
 #include "clock.h"
 #include "utils.h"
-
+#include <scheduler.h>
+#include <process/process.h>
 #include "multiboot.h"
 
 #include <libk/stdio.h>
@@ -55,6 +56,24 @@ void print_multiboot_info(multiboot_info_t *mbt)
     }
 }
 
+void t0()
+{
+    while (1) {
+        for (int i = 0; i < 100000000; ++i);
+        printf("task0\n");
+    }
+}
+
+void t1()
+{
+    while (1) {
+        for (int i = 0; i < 100000000; ++i);
+        printf("task1\n");
+    }
+}
+
+extern Process *current_process;
+
 void kmain(multiboot_info_t *mbt, unsigned int magic)
 {
     // Make a NULL stack frame to signal backtrace to stop
@@ -77,6 +96,12 @@ void kmain(multiboot_info_t *mbt, unsigned int magic)
 
     console_init(&console);
     print_multiboot_info(mbt);
+    Process p0 = create_process(0, t0);
+    Process p1 = create_process(1, t1);
+    p0.next = &p1;
+    p1.next = &p0;
+    current_process = &p0;
+    ((entryFn)current_process->eip)();
     puts("\n[#] Kernel end");
     for(;;);
 }

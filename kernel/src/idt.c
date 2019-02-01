@@ -8,6 +8,7 @@
 #include "syscalls.h"
 
 #include <libk/stdio.h>
+#include <scheduler.h>
 
 #ifdef __x86_64__
 typedef unsigned long long int uword_t;
@@ -26,10 +27,6 @@ static void idt_load(struct IDTPtr *idt_ptr)
 }
 
 extern Console console;
-
-extern void __int0x80();
-extern void __isr_timer();
-extern void __isr_keyboard();
 
 void __attribute__((interrupt)) isr0(struct interrupt_frame *frame)
 {
@@ -129,6 +126,9 @@ void __attribute__((interrupt)) isr_timer(struct interrupt_frame *frame)
     clock.ticks += 1;
     if (clock.ticks % 100 == 0) {
         clock.seconds += 1;
+        uint32_t ebp;
+        __asm__ __volatile__("movl %%ebp, %0" : "=r"(ebp));
+        switch_process(ebp);
     }
     // console_display_timer(&console);
     pic_ack(PIC1);

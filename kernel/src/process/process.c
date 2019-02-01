@@ -52,3 +52,13 @@ Process* createProcess(const char *path)
     *mainThread = createThread(process, entry, THREAD_PRIORITY_HIGH, THREAD_PAUSED);
     return process;
 }
+
+Process create_process(int id, entryFn entry)
+{
+    Process ret = {
+        .id = id,
+        .state = PROCESS_PAUSED,
+        .eip = (uint32_t)entry
+    };
+    return ret;
+}
