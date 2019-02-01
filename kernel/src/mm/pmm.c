@@ -2,13 +2,11 @@
 
 #include <libk/string.h>
 #include <error.h>
+#include <utils.h>
 
 #define BLOCK_SIZE 4096
 
 #define BITMAP_INDEX_ADDR(base, i) ((base) + (i) / sizeof(uint32_t))
-#define SET_BIT(x, i) ((x) | (1 << (i)))
-#define UNSET_BIT(x, i) ((x) & (~(1 << (i))))
-#define TEST_BIT(x, i) ((x) & (1 << (i)))
 
 #define ADDR_TO_BLOCK(x) ((unsigned int)(x) / BLOCK_SIZE)
 #define BLOCK_TO_ADDR(x) ((void*)((x) * BLOCK_SIZE));
