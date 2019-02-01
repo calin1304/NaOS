@@ -2,87 +2,95 @@
 
 #include <libk/string.h>
 
-#define PMM_BLOCK_SIZE 4096
+#define BLOCK_SIZE 4096
 
-uint32_t *pmm_bitmap;
-uint32_t pmm_bitmap_block_count;
+#define BITMAP_INDEX_ADDR(base, i) ((base) + (i) / sizeof(uint32_t))
+#define SET_BIT(x, i) ((x) | (1 << (i)))
+#define UNSET_BIT(x, i) ((x) & (~(1 << (i))))
+#define TEST_BIT(x, i) ((x) & (1 << (i)))
 
-#define PMM_BLOCK_FROM_PADDR(x) ((unsigned int)(x) / PMM_BLOCK_SIZE)
-#define PMM_BLOCK_ADDR(x) ((void*)((x) * PMM_BLOCK_SIZE));
+#define ADDR_TO_BLOCK(x) ((unsigned int)(x) / BLOCK_SIZE)
+#define BLOCK_TO_ADDR(x) ((void*)((x) * BLOCK_SIZE));
 
 extern void _symbol_KERNEL_START;
 extern void _symbol_KERNEL_END;
 
-static void pmm_set_block(int i)
+uint32_t *pmm_bitmap = &_symbol_KERNEL_END;
+uint32_t pmm_bitmap_block_count = 0;
+
+static void set_block(int i)
 {
-    uint32_t *p = pmm_bitmap + i / sizeof(uint32_t);
-    *p = (*p) | (1 << (i % sizeof(uint32_t)));
+    uint32_t *p = BITMAP_INDEX_ADDR(pmm_bitmap, i);
+    *p = SET_BIT(*p, i % sizeof(uint32_t));
 }
 
-static void pmm_unset_block(int i)
+static void unset_block(int i)
 {
-    uint32_t *p = pmm_bitmap + i / sizeof(uint32_t);
-    *p = (*p) & (~(1 << (i % sizeof(uint32_t))));
+    uint32_t *p = BITMAP_INDEX_ADDR(pmm_bitmap, i);
+    *p = UNSET_BIT(*p, i % sizeof(uint32_t));
 }
 
-static void pmm_set_blocks(unsigned int i, unsigned int count)
+static void set_blocks(unsigned int i, unsigned int count)
 {
-    for (; count > 0; ++i, --count) {
-        pmm_set_block(i);
-    }
+    while (count--) set_block(i++);
 }
 
-static void pmm_unset_blocks(unsigned int i, unsigned int count)
+static void unset_blocks(unsigned int i, unsigned int count)
 {
-    for (; count > 0; ++i, --count) {
-        pmm_unset_block(i);
-    }
+    while (count--) unset_block(i++);
 }
 
-static unsigned int pmm_test_block(unsigned int i)
+static unsigned int test_block(unsigned int i)
 {
-    return pmm_bitmap[i/sizeof(uint32_t)] & (1 << i%(sizeof(uint32_t)));
+    uint32_t *p = BITMAP_INDEX_ADDR(pmm_bitmap, i);
+    return TEST_BIT(*p, i % (sizeof(uint32_t)));
 }
 
 void pmm_init(multiboot_info_t *mbt)
-{    
-    pmm_bitmap = &_symbol_KERNEL_END;
-    pmm_set_block(PMM_BLOCK_FROM_PADDR(pmm_bitmap));
-    pmm_bitmap_block_count = 0;
-    multiboot_memory_map_t *mmap = (multiboot_memory_map_t*)mbt->mmap_addr;    
+{
+    // Reserver blocks occupied by bitmap
+    // TODO: Compute size of bitmap and reserver blocks based on that
+    set_block(ADDR_TO_BLOCK(pmm_bitmap));
+    // Compute number of blocks in memory map
+    multiboot_memory_map_t *mmap = (multiboot_memory_map_t*)mbt->mmap_addr;
     while (mmap < mbt->mmap_addr + mbt->mmap_length) {
         pmm_bitmap_block_count += mmap->len_low;
-        mmap = (multiboot_memory_map_t*) ((unsigned int)mmap + mmap->size + sizeof(mmap->size));
+        mmap = (multiboot_memory_map_t*) ((uintptr_t)mmap + mmap->size + sizeof(mmap->size));
     }
-    pmm_bitmap_block_count /= PMM_BLOCK_SIZE;
+    // Set all memory blocks as occupied in bitmap
+    pmm_bitmap_block_count /= BLOCK_SIZE;
     memset(pmm_bitmap, 0xffffffff, pmm_bitmap_block_count/sizeof(uint32_t));
+    // Set free memory as free blocks in bitmap
     mmap = mbt->mmap_addr;
     while (mmap < mbt->mmap_addr + mbt->mmap_length) {
         if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE) {
-            pmm_unset_blocks(PMM_BLOCK_FROM_PADDR(mmap->addr_low), mmap->len_low / PMM_BLOCK_SIZE);
+            unset_blocks(ADDR_TO_BLOCK(mmap->addr_low), mmap->len_low / BLOCK_SIZE);
         }
-        mmap = (multiboot_memory_map_t*) ((unsigned int)mmap + mmap->size + sizeof(mmap->size));
+        mmap = (multiboot_memory_map_t*) ((uintptr_t)mmap + mmap->size + sizeof(mmap->size));
     }
-    pmm_set_block(0);
-    int kernel_blocks = ((uintptr_t)&_symbol_KERNEL_END - (uintptr_t)&_symbol_KERNEL_START + 1) / PMM_BLOCK_SIZE;
-    pmm_set_blocks(PMM_BLOCK_FROM_PADDR(&_symbol_KERNEL_START), kernel_blocks);
+    // Reserver first block
+    set_block(0);
+    // Reserve blocks occupied by kernel
+    int kernel_blocks = ((uintptr_t)&_symbol_KERNEL_END - (uintptr_t)&_symbol_KERNEL_START + 1) / BLOCK_SIZE;
+    set_blocks(ADDR_TO_BLOCK(&_symbol_KERNEL_START), kernel_blocks);
 }
 
-static unsigned int pmm_get_first_free_block()
+static unsigned int find_free_block()
 {
     for (unsigned int i = 1; i < pmm_bitmap_block_count; ++i) {
-        if (pmm_test_block(i) == 0) {
+        if (test_block(i) == 0) {
             return i;
         }
     }
-    return 0;
+    return 0; // FIXME: Return error
 }
 
 void* pmm_alloc_block()
 {
-    unsigned int i = pmm_get_first_free_block();
-    pmm_set_block(i);
-    void *ret = PMM_BLOCK_ADDR(i);
+    unsigned int i = find_free_block();
+    set_block(i);
+    void *ret = BLOCK_TO_ADDR(i);
+    // FIXME: Return error instead of halting
     if (ret == 0) {
         __asm__ __volatile__("cli\nhlt");
     }
@@ -91,7 +99,7 @@ void* pmm_alloc_block()
 
 void pmm_free_block(void* p)
 {
-    pmm_unset_block(PMM_BLOCK_FROM_PADDR(p));
+    unset_block(ADDR_TO_BLOCK(p));
 }
 
 void pmm_load_pdbr(void *pdAddr)
