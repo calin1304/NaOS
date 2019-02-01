@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 
-#include "mm/memory.h"
 #include "multiboot.h"
 
 typedef uint32_t paddr;
