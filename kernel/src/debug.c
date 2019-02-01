@@ -5,7 +5,7 @@
 void backtrace()
 {
     int *ebp = 0;
-    asm("movl %%ebp, %0" : : "m"(ebp));
+    __asm__ __volatile__("movl %%ebp, %0" : : "m"(ebp));
     ebp = (int*)ebp[0]; // skip 2 isr frames
     ebp = (int*)ebp[0];
     int caller = ebp[1];

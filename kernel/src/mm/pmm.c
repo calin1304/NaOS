@@ -84,7 +84,7 @@ void* pmm_alloc_block()
     pmm_set_block(i);
     void *ret = PMM_BLOCK_ADDR(i);
     if (ret == 0) {
-        asm("cli\nhlt");
+        __asm__ __volatile__("cli\nhlt");
     }
     return ret;
 }
@@ -114,6 +114,6 @@ void pmm_enable_paging()
 void pmm_disable_paging()
 {
     uint32_t cr0;
-    asm volatile("movl %%cr0, %0" : "=r"(cr0));
-    asm volatile("movl %0, %%cr0" : : "r"(cr0 & (~0x80000000)));
+    __asm__ __volatile__("movl %%cr0, %0" : "=r"(cr0));
+    __asm__ __volatile__("movl %0, %%cr0" : : "r"(cr0 & (~0x80000000)));
 }

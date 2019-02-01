@@ -19,7 +19,7 @@ struct interrupt_frame;
 
 static void idt_load(struct IDTPtr *idt_ptr)
 {
-    asm volatile(
+    __asm__ __volatile__(
         "lidt (%0)\n"
         "sti" : : "r"(idt_ptr)
     );
@@ -34,50 +34,50 @@ extern void __isr_keyboard();
 void __attribute__((interrupt)) isr0(struct interrupt_frame *frame)
 {
     printf("[!] Exception 0: Division by zero\n");
-    asm volatile ("cli");
-    asm volatile ("hlt");
+    __asm__ __volatile__ ("cli");
+    __asm__ __volatile__ ("hlt");
 }
 
 void __attribute__((interrupt)) isr4(struct interrupt_frame *frame)
 {
     printf("[!] Exception 4: Overflow\n");
-    asm volatile ("cli");
-    asm volatile ("hlt");
+    __asm__ __volatile__ ("cli");
+    __asm__ __volatile__ ("hlt");
 }
 
 void __attribute__((interrupt)) isr5(struct interrupt_frame *frame)
 {
     printf("[!] Exception 5: Bound range exceded\n");
-    asm volatile ("cli");
-    asm volatile ("hlt");
+    __asm__ __volatile__ ("cli");
+    __asm__ __volatile__ ("hlt");
 }
 
 void __attribute__((interrupt)) isr6(struct interrupt_frame *frame)
 {
     printf("[!] Exception 6: Invalid opcode\n");
-    asm volatile ("cli");
-    asm volatile ("hlt");
+    __asm__ __volatile__ ("cli");
+    __asm__ __volatile__ ("hlt");
 }
 
 void __attribute__((interrupt)) isr7(struct interrupt_frame *frame)
 {
     printf("[!] Exception 7: Device not available\n");
-    asm volatile ("cli");
-    asm volatile ("hlt");
+    __asm__ __volatile__ ("cli");
+    __asm__ __volatile__ ("hlt");
 }
 
 void __attribute__((interrupt)) isr8(struct interrupt_frame *frame)
 {
     printf("[!] Exception 8: Double fault\n");
-    asm volatile ("cli");
-    asm volatile ("hlt");
+    __asm__ __volatile__ ("cli");
+    __asm__ __volatile__ ("hlt");
 }
 
 void __attribute__((interrupt)) isr13(struct interrupt_frame *frame)
 {
     printf("[!] Exception 13: General protection fault\n");
-    asm volatile ("cli");
-    asm volatile ("hlt");
+    __asm__ __volatile__ ("cli");
+    __asm__ __volatile__ ("hlt");
 }
 
 void __attribute__((interrupt)) isr14(struct interrupt_frame *frame, uword_t errorCode)
@@ -104,11 +104,11 @@ void __attribute__((interrupt)) isr14(struct interrupt_frame *frame, uword_t err
         printf("Caused by instructon fetch");
     }
     uint32_t faultAddr;
-    // __asm__("movl %cr2, %eax");
-    __asm__("movl %%cr2, %0" : "=r"(faultAddr));
+    // __asm__ __volatile__("movl %cr2, %eax");
+    __asm__ __volatile__("movl %%cr2, %0" : "=r"(faultAddr));
     printf("\nAddress: %x\n", faultAddr);
-    asm volatile ("cli");
-    asm volatile ("hlt");
+    __asm__ __volatile__ ("cli");
+    __asm__ __volatile__ ("hlt");
 }
 
 void __attribute__((interrupt)) isr_default(struct interrupt_frame *frame)

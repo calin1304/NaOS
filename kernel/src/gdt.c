@@ -4,7 +4,7 @@
 
 static void gdt_load(struct GDTPtr *ptr)
 {
-	asm volatile("lgdt (%0)" : : "r"(ptr));
+	__asm__ __volatile__("lgdt (%0)" : : "r"(ptr));
 }
 
 void gdt_entry_init(struct GDTEntry *entry, 
@@ -20,7 +20,7 @@ void gdt_entry_init(struct GDTEntry *entry,
 
 void load_tsr(uint16_t sel)
 {
-    __asm__("ltr %0" : : "r"(sel));
+    __asm__ __volatile__("ltr %0" : : "r"(sel));
 }
 
 struct tss_entry {

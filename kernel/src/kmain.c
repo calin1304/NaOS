@@ -58,7 +58,7 @@ void print_multiboot_info(multiboot_info_t *mbt)
 void kmain(multiboot_info_t *mbt, unsigned int magic)
 {
     // Make a NULL stack frame to signal backtrace to stop
-    asm volatile("movl $0, -4(%ebp)");
+    __asm__ __volatile__("movl $0, -4(%ebp)");
 
     uint16_t count = 1193180 / 100;
     outb(0x43, 0x36);

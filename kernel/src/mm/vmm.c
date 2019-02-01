@@ -13,7 +13,7 @@ PDirectory *oldDirectory = 0;
 
 void vmm_flush_tlb_page(vaddr addr)
 {
-    asm volatile(
+    __asm__ __volatile__(
         "cli\n"
         "invlpg %0\n"
         "sti"
@@ -190,7 +190,7 @@ void pdir_map_page(PDirectory *dir, void *phys, void *virt)
     if (pde_is_present(*e) == 0) {
         PTable *table = (PTable*)pmm_alloc_block();
         if (!table) {
-            asm("cli\nhlt");
+            __asm__ __volatile__("cli\nhlt");
             return;
         }
         memset(table, 0, sizeof(PTable));

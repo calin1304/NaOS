@@ -1,7 +1,7 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#define BP asm("xchgw %bx, %bx");
+#define BP __asm__ __volatile__("xchgw %bx, %bx");
 
 #define ASM_DUMP_REG_32(reg, var) \
     __asm__ __volatile__("movl %%"reg", %0" : "=r"((var)));
