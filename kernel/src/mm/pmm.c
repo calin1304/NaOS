@@ -13,33 +13,33 @@ uint32_t pmm_bitmap_block_count;
 extern void _symbol_KERNEL_START;
 extern void _symbol_KERNEL_END;
 
-void pmm_set_block(int i)
+static void pmm_set_block(int i)
 {
     uint32_t *p = pmm_bitmap + i / sizeof(uint32_t);
     *p = (*p) | (1 << (i % sizeof(uint32_t)));
 }
 
-void pmm_unset_block(int i)
+static void pmm_unset_block(int i)
 {
     uint32_t *p = pmm_bitmap + i / sizeof(uint32_t);
     *p = (*p) & (~(1 << (i % sizeof(uint32_t))));
 }
 
-void pmm_set_blocks(unsigned int i, unsigned int count)
+static void pmm_set_blocks(unsigned int i, unsigned int count)
 {
     for (; count > 0; ++i, --count) {
         pmm_set_block(i);
     }
 }
 
-void pmm_unset_blocks(unsigned int i, unsigned int count)
+static void pmm_unset_blocks(unsigned int i, unsigned int count)
 {
     for (; count > 0; ++i, --count) {
         pmm_unset_block(i);
     }
 }
 
-unsigned int pmm_test_block(unsigned int i)
+static unsigned int pmm_test_block(unsigned int i)
 {
     return pmm_bitmap[i/sizeof(uint32_t)] & (1 << i%(sizeof(uint32_t)));
 }
@@ -68,7 +68,7 @@ void pmm_init(multiboot_info_t *mbt)
     pmm_set_blocks(PMM_BLOCK_FROM_PADDR(&_symbol_KERNEL_START), kernel_blocks);
 }
 
-unsigned int pmm_get_first_free_block()
+static unsigned int pmm_get_first_free_block()
 {
     for (unsigned int i = 1; i < pmm_bitmap_block_count; ++i) {
         if (pmm_test_block(i) == 0) {
