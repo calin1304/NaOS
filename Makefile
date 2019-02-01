@@ -2,7 +2,7 @@ export ARCH := i686-elf
 export CC := $(ARCH)-gcc
 export LD := $(ARCH)-ld
 export AS := $(ARCH)-as
-export CFLAGS := -Wall -Wextra -I ${abspath .} -ffreestanding
+export CFLAGS := -Wall -Wextra -I ${abspath .} -ffreestanding -std=c99 -mno-red-zone
 
 KERNEL := kernel/ker.bin
 ISODIR := isodir
