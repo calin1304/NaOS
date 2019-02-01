@@ -1,6 +1,7 @@
 #include "mm/pmm.h"
 
 #include <libk/string.h>
+#include <error.h>
 
 #define BLOCK_SIZE 4096
 
@@ -77,23 +78,23 @@ void pmm_init(multiboot_info_t *mbt)
 
 static unsigned int find_free_block()
 {
-    for (unsigned int i = 1; i < pmm_bitmap_block_count; ++i) {
+    for (unsigned int i = 0; i < pmm_bitmap_block_count; ++i) {
         if (test_block(i) == 0) {
             return i;
         }
     }
-    return 0; // FIXME: Return error
+    last_error = ENOMEM;
+    return -ENOMEM;
 }
 
 void* pmm_alloc_block()
 {
     unsigned int i = find_free_block();
+    if (i == -ENOMEM) {
+        return NULL;
+    }
     set_block(i);
     void *ret = BLOCK_TO_ADDR(i);
-    // FIXME: Return error instead of halting
-    if (ret == 0) {
-        __asm__ __volatile__("cli\nhlt");
-    }
     return ret;
 }
 
