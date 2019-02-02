@@ -98,10 +98,9 @@ void kmain(multiboot_info_t *mbt, unsigned int magic)
     print_multiboot_info(mbt);
     Process p0 = create_process(0, t0);
     Process p1 = create_process(1, t1);
-    p0.next = &p1;
-    p1.next = &p0;
-    current_process = &p0;
-    ((entryFn)current_process->eip)();
+    scheduler_add(&p0);
+    scheduler_add(&p1);
+    scheduler_start();
     puts("\n[#] Kernel end");
     for(;;);
 }

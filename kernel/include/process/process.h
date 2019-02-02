@@ -21,10 +21,8 @@ typedef struct Process_ {
     PDirectory *pdir;
     Thread threads[MAX_THREADS_PER_PROCESS];    
     struct Process_ *next;
-    uint32_t eip;
+    void *eip;
 } Process;
-
-Process *current_process;
 
 Process create_process(int id, entryFn entry);
 

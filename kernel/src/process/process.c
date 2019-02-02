@@ -12,7 +12,8 @@ Process create_process(int id, entryFn entry)
     Process ret = {
         .id = id,
         .state = PROCESS_PAUSED,
-        .eip = (uint32_t)entry
+        .eip = (void*)entry,
+        .next = NULL
     };
     return ret;
 }
