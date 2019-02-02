@@ -2,10 +2,9 @@
 
 #include <libk/string.h>
 
-#define PDIR_INDEX(x) (((x) >> 22) & 0x3ff)
+#define PDIR_INDEX(x) (((x) >> 22))
 #define PTABLE_INDEX(x) (((x) >> 12) & 0x3ff)
 #define PAGE_OFFSET(x) ((x) & 0xfff)
-#define PAGE_PHYS_ADDR(x) (*(x) & (~0xfff))
 
 PDirectory kdir;
 PDirectory *currentDirectory = 0;
@@ -22,67 +21,47 @@ void vmm_flush_tlb_page(vaddr addr)
     );
 }
 
-void pte_add_attrib(PTEntry *e, uint32_t attrib)
+static void pte_add_attrib(PTEntry *e, uint32_t attrib)
 {
     *e |= attrib;
 }
 
-void pte_del_attrib(PTEntry *e, uint32_t attrib)
+static void pte_del_attrib(PTEntry *e, uint32_t attrib)
 {
     *e &= (~attrib);
 }
 
-void pte_set_frame(PTEntry *e, paddr phyAddr)
+static void pte_set_frame(PTEntry *e, paddr phyAddr)
 {
     *e = (phyAddr) | (*e & 0xfff);
 }
 
-int pte_is_present(PTEntry e)
+static int pte_is_present(PTEntry e)
 {
     return (e & PTE_PRESENT) == PTE_PRESENT;
 }
 
-// int pte_is_writable(PTEntry e)
-// {
-//     return (e & PTE_WRITABLE) != 0;
-// }
-
-paddr pte_get_paddr(PTEntry e)
+static paddr pte_get_paddr(PTEntry e)
 {
     return (e & (~0xfff));
 }
 
-void pde_add_attrib(PDEntry *e, uint32_t attrib)
+static void pde_add_attrib(PDEntry *e, uint32_t attrib)
 {
     *e |= attrib;
 }
 
-// void pde_del_attrib(PDEntry *e, uint32_t attrib)
-// {
-//     *e &= (~attrib);
-// }
-
-void pde_set_frame(PDEntry *e, paddr phyAddr)
+static void pde_set_frame(PDEntry *e, paddr phyAddr)
 {
     *e = (phyAddr) | (*e & 0xfff);
 }
 
-int pde_is_present(PDEntry e)
+static int pde_is_present(PDEntry e)
 {
     return (e & PDE_PRESENT) == PDE_PRESENT;
 }
 
-// int pde_is_user(PDEntry e)
-// {
-//     return (e & PDE_USER) != 0;
-// }
-
-// int pde_is_writable(PDEntry e)
-// {
-//      return (e & PDE_WRITABLE) != 0;
-// }
-
-paddr pde_get_paddr(PDEntry e)
+static paddr pde_get_paddr(PDEntry e)
 {
     return (e & (~0xfff));
 }
