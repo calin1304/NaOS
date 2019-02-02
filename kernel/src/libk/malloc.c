@@ -7,7 +7,7 @@
 
 void heap_initialize()
 {
-    vmm_map_page((HeapNode*)pmm_alloc_block(), HEAP_START);
+    vmm_map((HeapNode*)pmm_alloc_block(), HEAP_START);
     heap.head = (HeapNode*)HEAP_START;
     heap.end = heap.head;
     heap.size = 0;
@@ -45,7 +45,7 @@ void heap_extend(unsigned int s)
     int pageCount = (s / PAGE_SIZE) + (s % PAGE_SIZE);
     while (pageCount) {
         void *p = pmm_alloc_block();
-        vmm_map_page(p, heapSegmentEnd);
+        vmm_map(p, heapSegmentEnd);
         heapSegmentEnd += PAGE_SIZE;
         --pageCount;
     }

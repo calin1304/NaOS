@@ -18,7 +18,7 @@ enum {
 typedef struct Process_ {
     int id;
     int state;
-    PDirectory *pdir;
+    // PDirectory *pdir;
     Thread threads[MAX_THREADS_PER_PROCESS];    
     struct Process_ *next;
     void *eip;
