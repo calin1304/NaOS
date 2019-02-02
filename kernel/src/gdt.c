@@ -19,7 +19,7 @@ enum GDT_FLAGS {
     GDT_GRANULARITY = 0x8
 };
 
-struct GDTEntry {
+struct gdt_entry {
     uint16_t    limit;
     uint32_t    base    : 24;
     uint8_t     access;
@@ -28,20 +28,23 @@ struct GDTEntry {
     uint8_t     base3;
 } __attribute__((packed));
 
-struct GDTPtr {
+struct gdt_ptr {
     uint16_t limit;
     uint32_t base;
 } __attribute__((packed));
 
-struct GDTEntry gdt_entries[6];
-struct GDTPtr gdt_ptr;
+typedef struct gdt_entry gdt_entry_t;
+typedef struct gdt_ptr gdt_ptr_t;
 
-static void gdt_load(struct GDTPtr *ptr)
+gdt_entry_t gdt_entries[6];
+gdt_ptr_t gdt_ptr;
+
+static inline void gdt_load(struct gdt_ptr *ptr)
 {
 	__asm__ __volatile__("lgdt (%0)" : : "r"(ptr));
 }
 
-void gdt_entry_init(struct GDTEntry *entry, 
+static void gdt_entry_init(struct gdt_entry *entry, 
     uint32_t limit, uint32_t base, uint8_t access, uint8_t flags)
 {
     entry->limit    = (uint16_t)(limit & 0xffff);
@@ -52,7 +55,7 @@ void gdt_entry_init(struct GDTEntry *entry,
     entry->flags    = flags;
 }
 
-void load_tsr(uint16_t sel)
+static inline void load_tsr(uint16_t sel)
 {
     __asm__ __volatile__("ltr %0" : : "r"(sel));
 }
@@ -94,7 +97,7 @@ void gdt_init()
     gdt_ptr.limit = sizeof(gdt_entries) - 1;
     gdt_ptr.base = (uint32_t)&gdt_entries;
     
-    memset(&gdt_entries[0], 0, sizeof(struct GDTEntry));
+    memset(&gdt_entries[0], 0, sizeof(struct gdt_entry));
 
     gdt_entry_init(&gdt_entries[1], 0xffffffff, 0x0, GDT_ALWAYS_1 | GDT_PRESENT | GDT_EXECUTABLE | GDT_RW | GDT_DC, GDT_SIZE | GDT_GRANULARITY);
     gdt_entry_init(&gdt_entries[2], 0xffffffff, 0x0, GDT_ALWAYS_1 | GDT_PRESENT | GDT_RW, GDT_SIZE | GDT_GRANULARITY);
