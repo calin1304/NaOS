@@ -26,7 +26,6 @@ typedef struct Process_ {
 
 Process *current_process;
 
-Process* createProcess(const char* filename);
 Process create_process(int id, entryFn entry);
 
 #endif
