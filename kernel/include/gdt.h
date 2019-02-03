@@ -4,6 +4,6 @@
 #include <stdint.h>
 
 void gdt_init();
-void install_tss(uint16_t kernelSS, uint32_t kernelESP);
+void install_tss(uint32_t kernelSS, uint32_t kernelESP);
 
 #endif

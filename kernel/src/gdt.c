@@ -121,29 +121,31 @@ void gdt_init()
     
     memset(&gdt_entries[0], 0, sizeof(struct gdt_entry));
 
-    gdt_entry_init(&gdt_entries[1], 0xffffffff, 0, GDT_EXECUTABLE | GDT_RW | GDT_DC, GDT_SIZE | GDT_GRANULARITY);
+    gdt_entry_init(&gdt_entries[1], 0xffffffff, 0, GDT_EXECUTABLE | GDT_RW, GDT_SIZE | GDT_GRANULARITY);
     gdt_entry_init(&gdt_entries[2], 0xffffffff, 0, GDT_RW, GDT_SIZE | GDT_GRANULARITY);
     
-    gdt_entry_init(&gdt_entries[3], 0xffffffff, 0, GDT_EXECUTABLE | GDT_RW | GDT_PRIVILEGE_3 | GDT_DC, GDT_SIZE | GDT_GRANULARITY);
+    gdt_entry_init(&gdt_entries[3], 0xffffffff, 0, GDT_EXECUTABLE | GDT_RW | GDT_PRIVILEGE_3, GDT_SIZE | GDT_GRANULARITY);
     gdt_entry_init(&gdt_entries[4], 0xffffffff, 0, GDT_RW | GDT_PRIVILEGE_3, GDT_SIZE | GDT_GRANULARITY);
-
-    gdt_load(&gdt_ptr);
-}
-
-void install_tss(uint16_t kernelSS, uint32_t kernelESP)
-{
-    uint32_t base = (uint32_t)&TSS;
-    gdt_entry_init(&gdt_entries[5], base + sizeof(struct tss_entry), base, 
-		GDT_PRESENT | GDT_EXECUTABLE | GDT_PRIVILEGE_3 | GDT_ACCESSED, 0);
-    memset((void*)&TSS, 0, sizeof(struct tss_entry));
     
-    TSS.ss0 = kernelSS;
-    TSS.esp0 = kernelESP;   
+    gdt_load(&gdt_ptr);
+
+    uint32_t base = (uint32_t)&TSS;
+    gdt_entry_init(&gdt_entries[5], base + sizeof(struct tss_entry), base, GDT_EXECUTABLE, 0);
+    gdt_entries[5].accessed = 1;
+    gdt_entries[5].s = 0;
+    memset((void*)&TSS, 0, sizeof(struct tss_entry));
     TSS.cs = 0x0b;
     TSS.ss = 0x13;
 	TSS.es = 0x13;
 	TSS.ds = 0x13;
 	TSS.fs = 0x13;
 	TSS.gs = 0x13;
-    load_tsr(0x2b);
+    load_tsr(0x28);
+}
+
+// TODO: Rename to tss_set_stack or something like that
+void install_tss(uint32_t kernelSS, uint32_t kernelESP)
+{
+    TSS.ss0 = kernelSS;
+    TSS.esp0 = kernelESP;
 }
