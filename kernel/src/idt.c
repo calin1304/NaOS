@@ -18,6 +18,20 @@ typedef unsigned int uword_t;
 
 struct interrupt_frame;
 
+#define ISR(name) static void __attribute__((interrupt)) name(struct interurpt_frame *frame)
+#define ISRE(name) static void __attribute__((interrupt)) name(struct interrupt_frame *frame, uword_t errorCode)
+#define HLT __asm__("cli\n\thlt");
+
+#define ISR_DRIVER(name) \
+    extern void _##name(void);\
+    __asm__(".global _"#name"\n\t"\
+            "_"#name":\n\t"\
+            "cld\n\t"\
+            "pusha\n\t"\
+            "call "#name"\n\t"\
+            "popa\n\t"\
+            "iret");
+
 static void idt_load(struct IDTPtr *idt_ptr)
 {
     __asm__ __volatile__(
@@ -28,56 +42,54 @@ static void idt_load(struct IDTPtr *idt_ptr)
 
 extern Console console;
 
-void __attribute__((interrupt)) isr0(struct interrupt_frame *frame)
+ISR(isr_default)
+{
+    HLT;
+}
+
+ISR(isr0)
 {
     printf("[!] Exception 0: Division by zero\n");
-    __asm__ __volatile__ ("cli");
-    __asm__ __volatile__ ("hlt");
+    HLT;
 }
 
-void __attribute__((interrupt)) isr4(struct interrupt_frame *frame)
+ISR(isr4)
 {
     printf("[!] Exception 4: Overflow\n");
-    __asm__ __volatile__ ("cli");
-    __asm__ __volatile__ ("hlt");
+    HLT;
 }
 
-void __attribute__((interrupt)) isr5(struct interrupt_frame *frame)
+ISR(isr5)
 {
     printf("[!] Exception 5: Bound range exceded\n");
-    __asm__ __volatile__ ("cli");
-    __asm__ __volatile__ ("hlt");
+    HLT;
 }
 
-void __attribute__((interrupt)) isr6(struct interrupt_frame *frame)
+ISR(isr6)
 {
     printf("[!] Exception 6: Invalid opcode\n");
-    __asm__ __volatile__ ("cli");
-    __asm__ __volatile__ ("hlt");
+    HLT;
 }
 
-void __attribute__((interrupt)) isr7(struct interrupt_frame *frame)
+ISR(isr7)
 {
     printf("[!] Exception 7: Device not available\n");
-    __asm__ __volatile__ ("cli");
-    __asm__ __volatile__ ("hlt");
+    HLT;
 }
 
-void __attribute__((interrupt)) isr8(struct interrupt_frame *frame)
+ISR(isr8)
 {
     printf("[!] Exception 8: Double fault\n");
-    __asm__ __volatile__ ("cli");
-    __asm__ __volatile__ ("hlt");
+    HLT;
 }
 
-void __attribute__((interrupt)) isr13(struct interrupt_frame *frame)
+ISR(isr13)
 {
     printf("[!] Exception 13: General protection fault\n");
-    __asm__ __volatile__ ("cli");
-    __asm__ __volatile__ ("hlt");
+    HLT;
 }
 
-void __attribute__((interrupt)) isr14(struct interrupt_frame *frame, uword_t errorCode)
+ISRE(isr14)
 {
     printf("[!] Exception 14 - Page fault - ");
     
@@ -104,25 +116,12 @@ void __attribute__((interrupt)) isr14(struct interrupt_frame *frame, uword_t err
     // __asm__ __volatile__("movl %cr2, %eax");
     __asm__ __volatile__("movl %%cr2, %0" : "=r"(faultAddr));
     printf("\nAddress: %x\n", faultAddr);
-    __asm__ __volatile__ ("cli");
-    __asm__ __volatile__ ("hlt");
+    HLT;
 }
 
-void __attribute__((interrupt)) isr_default(struct interrupt_frame *frame)
-{
-}
+ISR_DRIVER(isr_128);
 
-extern void isr_128(void);
-
-__asm__(".global isr_128\n\t"
-        "isr_128:\n\t"
-        "cld\n\t"
-        "pusha\n\t"
-        "call int0x80\n\t"
-        "popa\n\t"
-        "iret");
-
-void int0x80(syscall_frame_t frame)
+void isr_128(syscall_frame_t frame)
 {
     void (*apicall)(struct syscall_frame*) = syscalls[frame.eax];
     apicall(&frame);
@@ -130,7 +129,7 @@ void int0x80(syscall_frame_t frame)
 
 extern clock_t clock;
 
-void __attribute__((interrupt)) isr_timer(struct interrupt_frame *frame)
+ISR(isr_timer)
 {
     // console_printf(&console, "Timer tick\n");
     clock.ticks += 1;
@@ -144,7 +143,7 @@ void __attribute__((interrupt)) isr_timer(struct interrupt_frame *frame)
     pic_ack(PIC1);
 }
 
-void __attribute__((interrupt)) isr_keyboard(struct interrupt_frame *frame)
+ISR(isr_keyboard)
 {    
     uint8_t scancode = inb(0x60);
     
@@ -173,7 +172,7 @@ void idt_init()
     idt_set_gate(14,    (uint32_t)isr14,          0x8, 0x8e);
     idt_set_gate(0x20,  (uint32_t)isr_timer,      0x8, 0x8e);
     idt_set_gate(0x21,  (uint32_t)isr_keyboard,   0x8, 0x8e);
-    idt_set_gate(0x80,  (uint32_t)isr_128,        0x8, 0xee);
+    idt_set_gate(0x80,  (uint32_t)_isr_128,       0x8, 0xee);
     
     idt_install();
 }
