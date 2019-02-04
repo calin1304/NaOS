@@ -112,10 +112,20 @@ void __attribute__((interrupt)) isr_default(struct interrupt_frame *frame)
 {
 }
 
-void int0x80(uint32_t eax)
+extern void isr_128(void);
+
+__asm__(".global isr_128\n\t"
+        "isr_128:\n\t"
+        "cld\n\t"
+        "pusha\n\t"
+        "call int0x80\n\t"
+        "popa\n\t"
+        "iret");
+
+void int0x80(syscall_frame_t frame)
 {
-    void (*apicall)() = syscalls[eax];
-    apicall();
+    void (*apicall)(struct syscall_frame*) = syscalls[frame.eax];
+    apicall(&frame);
 }
 
 extern clock_t clock;
@@ -163,6 +173,7 @@ void idt_init()
     idt_set_gate(14,    (uint32_t)isr14,          0x8, 0x8e);
     idt_set_gate(0x20,  (uint32_t)isr_timer,      0x8, 0x8e);
     idt_set_gate(0x21,  (uint32_t)isr_keyboard,   0x8, 0x8e);
+    idt_set_gate(0x80,  (uint32_t)isr_128,        0x8, 0xee);
     
     idt_install();
 }

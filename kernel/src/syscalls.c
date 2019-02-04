@@ -1,15 +1,14 @@
 #include "syscalls.h"
 
 #include <libk/stdio.h>
+#include <idt.h>
 
 void *syscalls[] = {
     syscall_puts,
     syscall_puts
 };
 
-void syscall_puts()
+void syscall_puts(syscall_frame_t *frame)
 {
-    char *s;
-    __asm__ __volatile__ ("movl %%ebx, %0" : "=r"(s));
-    puts(s);
+    puts(frame->ebx);
 }

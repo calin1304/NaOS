@@ -69,6 +69,7 @@ static void init_pd_entry(pd_entry_t *pde)
     memset(pt, 0, sizeof(page_table_t));
     pde->present = 1;
     pde->writable = 1;
+    pde->user = 1;
     pde->pt_paddr = PADDR_TO_FRAME(pt);
 }
 
@@ -84,6 +85,7 @@ static void identity_map(page_directory_t *dir, paddr start, size_t pages)
         pt_entry_t *pte = PT_ENTRY(*pt, currAddr);
         pte->writable = 1;
         pte->present = 1;
+        pte->user = 1;
         pte->page_paddr = PADDR_TO_FRAME(currAddr);
     }
 }
@@ -91,8 +93,7 @@ static void identity_map(page_directory_t *dir, paddr start, size_t pages)
 void vmm_init()
 {
     identity_map(&pdir, 0x0, 1024);
-    current_dir = &pdir;
-    pmm_load_pdbr(current_dir);
+    vmm_set_pdir(&pdir);
     pmm_enable_paging();
 }
 
@@ -106,5 +107,33 @@ void vmm_map(paddr p, vaddr v)
     pt_entry_t *pte = PT_ENTRY(*pt, v);
     pte->present = 1;
     pte->writable = 1;
+    pte->user = 1;
     pte->page_paddr = PADDR_TO_FRAME(p)
+}
+
+page_directory_t* vmm_copy_pdir(page_directory_t *pdir)
+{
+    //TODO: Should allocate to page boundary with malloc to map in vspace
+    page_directory_t *ret = pmm_alloc_block();
+    memcpy(ret, pdir, sizeof(page_directory_t));
+    for (int i = 0; i < PAGES_PER_DIR; ++i) {
+        if (IS_VALID_PDE(&pdir->entries[i])) {
+            page_table_t *pt = PDE_PADDR(pdir->entries[i]);
+            page_table_t *t = pmm_alloc_block();
+            memcpy(t, pt, sizeof(page_table_t));
+            ret->entries[i].pt_paddr = PADDR_TO_FRAME(t);
+        }
+    }
+    return ret;
+}
+
+page_directory_t* vmm_get_pdir()
+{
+    return current_dir;
+}
+
+void vmm_set_pdir(page_directory_t *new_pdir)
+{
+    current_dir = new_pdir;
+    pmm_load_pdbr(current_dir);
 }

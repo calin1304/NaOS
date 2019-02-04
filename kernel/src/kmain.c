@@ -58,21 +58,51 @@ void print_multiboot_info(multiboot_info_t *mbt)
 
 void t0()
 {
+    char *s = "t0";
     while (1) {
         for (int i = 0; i < 100000000; ++i);
-        printf("task0\n");
+        __asm__("mov $0, %eax");
+        __asm__("mov %0, %%ebx" : : "m"(s) : "%ebx");
+        __asm__("int $0x80");
     }
 }
 
 void t1()
 {
+    char *s = "t1";
     while (1) {
         for (int i = 0; i < 100000000; ++i);
-        printf("task1\n");
+        __asm__("mov $0, %eax");
+        __asm__("mov %0, %%ebx" : : "m"(s) : "%ebx");
+        __asm__("int $0x80");
     }
 }
 
-extern Process *current_process;
+void enter_userspace()
+{
+    //FIXME: Page fault on kernel stack
+    void * kernel_stack = 0x7c00;//malloc(4096);
+    install_tss(0x10, kernel_stack);
+    __asm__ __volatile__("cli");
+    // Setup userspace data segments
+    __asm__ __volatile__("mov $0x23, %ax\n\t"
+                         "mov %ax, %ds\n\t"
+                         "mov %ax, %es\n\t"
+                         "mov %ax, %fs\n\t"
+                         "mov %ax, %gs");
+    // Setup userspace stack
+    __asm__ __volatile__("mov %esp, %eax\n\t"
+                         "push $0x23\n\t"
+                         "push %eax");
+    __asm__ __volatile__("pushf\n\t");
+    __asm__ __volatile__("pop %eax\n\t"
+                         "or $0x200, %eax\n\t" // Enable IF in EFLAGS
+                         "push %eax"); 
+    __asm__ __volatile__("push $0x1b"); // Push userspace code segment selector
+    __asm__ __volatile__("push $1f\n\t"
+                         "iret\n\t"
+                         "1:");
+}
 
 void kmain(multiboot_info_t *mbt, unsigned int magic)
 {
@@ -100,7 +130,7 @@ void kmain(multiboot_info_t *mbt, unsigned int magic)
     Process p1 = create_process(1, t1);
     scheduler_add(&p0);
     scheduler_add(&p1);
+    enter_userspace();
     scheduler_start();
-    puts("\n[#] Kernel end");
     for(;;);
 }

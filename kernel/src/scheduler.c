@@ -2,6 +2,7 @@
 #include <libk/stdio.h>
 
 static Process *current_process = NULL;
+static int is_started = 0;
 
 void init_scheduler()
 {
@@ -9,12 +10,29 @@ void init_scheduler()
 
 void switch_process(uint32_t *isr_frame)
 {
-    if (!current_process) {
+    if (!is_started) {
         return;
     }
-    current_process->eip = isr_frame[1];
-    current_process = current_process->next;
-    isr_frame[1] = current_process->eip;
+    if (current_process->state != PROCESS_PAUSED) {
+        current_process->state = PROCESS_PAUSED;
+        // current_process->stack3 = isr_frame[4]; // Save userspace ESP    
+        current_process->eip = isr_frame[1]; // Save EIP
+
+        current_process = current_process->next; // Load next process
+    }
+    current_process->state = PROCESS_RUNNING;
+    isr_frame[1] = current_process->eip; // Set interrupt return EIP to next process
+    
+    // isr_frame[4] = current_process->stack3; // Set stack for next process
+    
+    // Switch virtual space to new process
+    // vmm_set_pdir(current_process->pdir);
+
+    // Set kernel stack in TSS
+    // install_tss(0x10, current_process->stack0);
+
+    /* Must save and later restore all registers (eax, ebx...). Don't know if
+    they are already saved in tss by context switch */
 }
 
 void scheduler_add(Process *p)
@@ -26,9 +44,10 @@ void scheduler_add(Process *p)
         p->next = current_process->next;
         current_process->next = p;
     }
+    p->state = PROCESS_PAUSED;
 }
 
 void scheduler_start()
 {
-    ((entryFn)current_process->eip)();
+    is_started = 1;
 }
