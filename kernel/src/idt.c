@@ -18,7 +18,7 @@ typedef unsigned int uword_t;
 
 struct interrupt_frame;
 
-#define ISR(name) static void __attribute__((interrupt)) name(struct interurpt_frame *frame)
+#define ISR(name) static void __attribute__((interrupt)) name(struct interrupt_frame *frame)
 #define ISRE(name) static void __attribute__((interrupt)) name(struct interrupt_frame *frame, uword_t errorCode)
 #define HLT __asm__("cli\n\thlt");
 
