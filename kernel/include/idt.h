@@ -20,9 +20,6 @@ struct IDTEntry    idt[256];
 struct IDTPtr      idtp;
 
 void idt_init();
-void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags);
-void* idt_get_gate(uint8_t num);
-void idt_install();
 
 struct syscall_frame {
     uint32_t edi;

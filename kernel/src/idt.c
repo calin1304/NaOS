@@ -124,6 +124,28 @@ ISR(isr_keyboard)
     pic_ack(PIC1);
 }
 
+static void idt_install()
+{
+    idtp.limit = sizeof(struct IDTEntry) * 256 - 1;
+    idtp.base = (uint32_t)&idt;
+    idt_load(&idtp);
+}
+
+static void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags)
+{
+    idt[num].flags = flags;
+    idt[num].selector = sel;
+    idt[num].baseLo = (base & 0x0000ffff);
+    idt[num].baseHi = (base & 0xffff0000) >> 16;
+}
+
+static void* idt_get_gate(uint8_t num)
+{
+    uint32_t ret;
+    ret = idt[num].baseLo | (idt[num].baseHi << 16);
+    return (void*)ret;
+}
+
 void idt_init() 
 {
     for (int i = 0; i < 256; ++i) {
@@ -142,26 +164,4 @@ void idt_init()
     idt_set_gate(0x80,  (uint32_t)_isr_128,       0x8, 0xee);
     
     idt_install();
-}
-
-void idt_install()
-{
-    idtp.limit = sizeof(struct IDTEntry) * 256 - 1;
-    idtp.base = (uint32_t)&idt;
-    idt_load(&idtp);
-}
-
-void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags)
-{
-    idt[num].flags = flags;
-    idt[num].selector = sel;
-    idt[num].baseLo = (base & 0x0000ffff);
-    idt[num].baseHi = (base & 0xffff0000) >> 16;
-}
-
-void* idt_get_gate(uint8_t num)
-{
-    uint32_t ret;
-    ret = idt[num].baseLo | (idt[num].baseHi << 16);
-    return (void*)ret;
 }
