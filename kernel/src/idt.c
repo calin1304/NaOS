@@ -9,6 +9,7 @@
 
 #include <libk/stdio.h>
 #include <scheduler.h>
+#include <utils.h>
 
 #ifdef __x86_64__
 typedef unsigned long long int uword_t;
@@ -21,6 +22,7 @@ struct interrupt_frame;
 #define ISR(name) static void __attribute__((interrupt)) name(struct interrupt_frame *frame)
 #define ISRE(name) static void __attribute__((interrupt)) name(struct interrupt_frame *frame, uword_t errorCode)
 #define HLT __asm__("cli\n\thlt");
+#define ISR_MSG(name, message) ISR(name){ UNUSED(frame); printf(#message); HLT;}
 
 #define ISR_DRIVER(name) \
     extern void _##name(void);\
@@ -47,47 +49,13 @@ ISR(isr_default)
     HLT;
 }
 
-ISR(isr0)
-{
-    printf("[!] Exception 0: Division by zero\n");
-    HLT;
-}
-
-ISR(isr4)
-{
-    printf("[!] Exception 4: Overflow\n");
-    HLT;
-}
-
-ISR(isr5)
-{
-    printf("[!] Exception 5: Bound range exceded\n");
-    HLT;
-}
-
-ISR(isr6)
-{
-    printf("[!] Exception 6: Invalid opcode\n");
-    HLT;
-}
-
-ISR(isr7)
-{
-    printf("[!] Exception 7: Device not available\n");
-    HLT;
-}
-
-ISR(isr8)
-{
-    printf("[!] Exception 8: Double fault\n");
-    HLT;
-}
-
-ISR(isr13)
-{
-    printf("[!] Exception 13: General protection fault\n");
-    HLT;
-}
+ISR_MSG(isr0, "[!] Exception 0: Division by zero\n");
+ISR_MSG(isr4,"[!] Exception 4: Overflow\n");
+ISR_MSG(isr5, "[!] Exception 5: Bound range exceded\n");
+ISR_MSG(isr6,"[!] Exception 6: Invalid opcode\n");
+ISR_MSG(isr7, "[!] Exception 7: Device not available\n");
+ISR_MSG(isr8, "[!] Exception 8: Double fault\n");
+ISR_MSG(isr13, "[!] Exception 13: General protection fault\n");
 
 ISRE(isr14)
 {
