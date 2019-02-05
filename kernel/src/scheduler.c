@@ -8,7 +8,7 @@ void init_scheduler()
 {
 }
 
-void switch_process(uint32_t *isr_frame)
+void switch_process(uint32_t *task_eip, syscall_frame_t *frame)
 {
     if (!is_started) {
         return;
@@ -16,12 +16,14 @@ void switch_process(uint32_t *isr_frame)
     if (current_process->state != PROCESS_PAUSED) {
         current_process->state = PROCESS_PAUSED;
         // current_process->stack3 = isr_frame[4]; // Save userspace ESP    
-        current_process->eip = isr_frame[1]; // Save EIP
+        current_process->eip = *task_eip; // Save EIP
+        current_process->regs = *frame; // Save register values
 
         current_process = current_process->next; // Load next process
     }
     current_process->state = PROCESS_RUNNING;
-    isr_frame[1] = current_process->eip; // Set interrupt return EIP to next process
+    *task_eip = current_process->eip; // Set interrupt return EIP to next process
+    *frame = current_process->regs; // Restore register values for task
     
     // isr_frame[4] = current_process->stack3; // Set stack for next process
     

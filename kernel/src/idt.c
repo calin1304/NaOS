@@ -129,15 +129,14 @@ void isr_128(syscall_frame_t frame)
 
 extern clock_t clock;
 
-ISR(isr_timer)
+ISR_DRIVER(isr_timer);
+void isr_timer(syscall_frame_t frame)
 {
     // console_printf(&console, "Timer tick\n");
     clock.ticks += 1;
     if (clock.ticks % 100 == 0) {
         clock.seconds += 1;
-        uint32_t ebp;
-        __asm__ __volatile__("movl %%ebp, %0" : "=r"(ebp));
-        switch_process(ebp);
+        switch_process((uint32_t*)(&frame.eax)+1, &frame);
     }
     // console_display_timer(&console);
     pic_ack(PIC1);
@@ -170,7 +169,7 @@ void idt_init()
     idt_set_gate(8,     (uint32_t)isr8,           0x8, 0x8e);
     idt_set_gate(13,    (uint32_t)isr13,          0x8, 0x8e);
     idt_set_gate(14,    (uint32_t)isr14,          0x8, 0x8e);
-    idt_set_gate(0x20,  (uint32_t)isr_timer,      0x8, 0x8e);
+    idt_set_gate(0x20,  (uint32_t)_isr_timer,      0x8, 0x8e);
     idt_set_gate(0x21,  (uint32_t)isr_keyboard,   0x8, 0x8e);
     idt_set_gate(0x80,  (uint32_t)_isr_128,       0x8, 0xee);
     

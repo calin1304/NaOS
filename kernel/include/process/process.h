@@ -3,6 +3,7 @@
 
 #include <mm/vmm.h>
 #include <process/thread.h>
+#include <idt.h>
 
 #define MAX_THREADS_PER_PROCESS 1
 
@@ -22,6 +23,7 @@ typedef struct Process_ {
     Thread threads[MAX_THREADS_PER_PROCESS];    
     struct Process_ *next;
     void *eip;
+    syscall_frame_t regs;
 } Process;
 
 Process create_process(int id, entryFn entry);
