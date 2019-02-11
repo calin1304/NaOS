@@ -1,6 +1,6 @@
 #include "mm/pmm.h"
 
-#include <libk/string.h>
+#include <string.h>
 #include <error.h>
 #include <utils.h>
 

@@ -2,7 +2,7 @@
 #include "drivers/ata/ata.h"
 #include "clock.h"
 
-#include <libk/string.h>
+#include <string.h>
 #include "mm/pmm.h"
 #include "mm/vmm.h"
 #include "vfs.h"

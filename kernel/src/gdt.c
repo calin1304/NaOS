@@ -1,6 +1,6 @@
 #include "gdt.h"
 
-#include <libk/string.h>
+#include <string.h>
 
 enum GDT_ACCESS {
     GDT_ACCESSED        = 0x01,

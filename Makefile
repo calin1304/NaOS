@@ -8,7 +8,7 @@ KERNEL := kernel/ker.bin
 ISODIR := isodir
 
 .PHONY: all iso initrd kernel clean
-all: kernel initrd iso
+all: libc kernel initrd iso
 
 iso:	
 	cp -f $(KERNEL) $(ISODIR)/boot/
@@ -16,6 +16,9 @@ iso:
 
 initrd:
 	tar -c -f $(ISODIR)/boot/naos.initrd initrd/*
+
+libc:
+	$(MAKE) -C libc
 
 kernel:
 	$(MAKE) -C kernel

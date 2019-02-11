@@ -4,7 +4,7 @@
 #include "mm/pmm.h"
 #include "mm/vmm.h"
 #include <libk/stdio.h>
-#include <libk/string.h>
+#include <string.h>
 #include <libk/stdlib.h>
 
 Process create_process(int id, entryFn entry)

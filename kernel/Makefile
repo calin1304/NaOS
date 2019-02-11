@@ -1,13 +1,14 @@
-CFLAGS := $(CFLAGS) -I./ -I./include -I./libk/include -mno-80387
+CFLAGS := $(CFLAGS) -I./ -I./include -I./libk/include -I../libc/include -mno-80387
 SRCDIR := src
 BUILDDIR := .obj
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:%.c=%.o))
-LIBS := -lgcc
+LIBS := -lgcc -lk
+LIBDIR=../libc/
 TARGET := ker.bin
-LDFLAGS := -nostdlib
+LDFLAGS := -nostdlib -L$(LIBDIR)
 
-.PHONY: all
+.PHONY: all clean
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS) $(BUILDDIR)/boot.o
@@ -22,9 +23,7 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c $(BUILDDIR)
 $(BUILDDIR):
 	mkdir $@
 
-.PHONY: clean
 clean:
-	$(MAKE) -C libk clean
 	rm -f $(BUILDDIR)/*.o
 	rm -f $(OBJECTS)
 	rm -f $(TARGET)
