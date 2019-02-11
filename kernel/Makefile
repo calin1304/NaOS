@@ -1,4 +1,4 @@
-CFLAGS := $(CFLAGS) -I./ -I./include -I./libk/include -g -mno-80387
+CFLAGS := $(CFLAGS) -I./ -I./include -I./libk/include -mno-80387
 SRCDIR := src
 BUILDDIR := .obj
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
