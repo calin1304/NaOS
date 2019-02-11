@@ -1,5 +1,9 @@
 #include <stdint.h>
 
+void* kmalloc(unsigned int size);
+void kfree(void * ptr);
+
+
 typedef struct HeapNode_ {
     uint32_t allocated;
     struct HeapNode_ *next;

@@ -8,7 +8,7 @@
 #include "vfs.h"
 #include "utils.h"
 
-#include <libk/stdio.h>
+#include <stdio.h>
 #include <ctype.h>
 
 #define ROOT_DIRECTORY_START_LBA 19

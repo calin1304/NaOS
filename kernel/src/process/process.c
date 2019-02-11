@@ -3,9 +3,9 @@
 #include "elf.h"
 #include "mm/pmm.h"
 #include "mm/vmm.h"
-#include <libk/stdio.h>
+#include <stdio.h>
 #include <string.h>
-#include <libk/stdlib.h>
+#include <stdlib.h>
 
 Process create_process(int id, entryFn entry)
 {

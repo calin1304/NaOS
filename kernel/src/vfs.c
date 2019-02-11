@@ -2,7 +2,7 @@
 
 #include <ctype.h>
 #include <string.h>
-#include <libk/stdlib.h>
+#include <stdlib.h>
 
 size_t vfs_fread(void *ptr, size_t size, size_t count, FILE* f)
 {

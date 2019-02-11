@@ -7,7 +7,7 @@
 #include "clock.h"
 #include "syscalls.h"
 
-#include <libk/stdio.h>
+#include <stdio.h>
 #include <scheduler.h>
 #include <utils.h>
 

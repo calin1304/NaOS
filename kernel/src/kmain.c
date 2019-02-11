@@ -13,8 +13,8 @@
 #include "multiboot.h"
 #include <fs/tar.h>
 
-#include <libk/stdio.h>
-#include <libk/stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 void print_multiboot_info(multiboot_info_t *mbt)
 {

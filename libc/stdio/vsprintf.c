@@ -1,19 +1,9 @@
-#include <libk/stdio.h>
+#include <stdio.h>
+
+#include <stdint.h>
 #include <stdarg.h>
-#include "console.h"
-#include "vfs.h"
 
-FILE *fopen(const char *filename, const char *mode)
-{
-    return vfsFOpen(filename, mode);
-}
-
-size_t fread(void *ptr, size_t size, size_t count, FILE *f)
-{
-    return vfs_fread(ptr, size, count, f);
-}
-
-const char *hexTable = "0123456789ABCDEF";
+static const char *hexTable = "0123456789ABCDEF";
 
 void vsprintf(char *s, const char *format, va_list args)
 {
@@ -45,35 +35,4 @@ void vsprintf(char *s, const char *format, va_list args)
         }
     }
     *s = '\0';
-}
-
-void sprintf(char *s, const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    vsprintf(s, format, args);
-    va_end(args);
-}
-
-void vprintf(const char *format, va_list args)
-{
-    console_vprintf(&console, format, args);
-}
-
-void printf(const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    vprintf(format, args);
-    va_end(args);
-}
-
-void putchar(int c)
-{
-    console_put_char(&console, (char)c);
-}
-
-void puts(const char *s)
-{
-    printf("%s\n", s);;
 }

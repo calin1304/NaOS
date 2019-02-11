@@ -2,12 +2,15 @@ export ARCH := i686-elf
 export CC := $(ARCH)-gcc
 export LD := $(ARCH)-ld
 export AS := $(ARCH)-as
-export CFLAGS := -Wall -Wextra -I ${abspath .} -ffreestanding -std=c99 -mno-red-zone
+
+export SYSROOT=${abspath ./sysroot}
+
+export CFLAGS := -Wall -Wextra -ffreestanding -std=c99 -mno-red-zone
 
 KERNEL := kernel/ker.bin
 ISODIR := isodir
 
-.PHONY: all iso initrd kernel clean
+.PHONY: all iso initrd libc kernel install-headers clean
 all: libc kernel initrd iso
 
 iso:	
@@ -22,6 +25,10 @@ libc:
 
 kernel:
 	$(MAKE) -C kernel
+
+install-headers:
+	$(MAKE) -C libc install-headers
+	$(MAKE) -C kernel install-headers
 
 clean:
 	$(MAKE) -C libc clean

@@ -1,4 +1,4 @@
-#include "libk/malloc.h"
+#include <kmalloc.h>
 
 #include "mm/pmm.h"
 #include "mm/vmm.h"
@@ -50,7 +50,7 @@ void heap_extend(unsigned int s)
     }
 }
 
-void* malloc(unsigned int size)
+void* kmalloc(unsigned int size)
 {
     if (!heap.head) {
         heap_initialize();
@@ -59,4 +59,10 @@ void* malloc(unsigned int size)
         heap_extend(size);
     }
     return &(((HeapNode*)heap_alloc_new_node(size))->data);
+}
+
+void kfree(void * ptr)
+{
+    HeapNode *hn = (HeapNode*)(((int*)ptr - 2));
+    hn->allocated = 0;
 }

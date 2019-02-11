@@ -1,4 +1,5 @@
-CFLAGS := $(CFLAGS) -I./ -I./include -I./libk/include -I../libc/include -mno-80387
+PREFIX=/usr
+CFLAGS := $(CFLAGS) -Iincldue -I$(SYSROOT)$(PREFIX)/include -mno-80387 -D__is_libk
 SRCDIR := src
 BUILDDIR := .obj
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
@@ -8,7 +9,7 @@ LIBDIR=../libc/
 TARGET := ker.bin
 LDFLAGS := -nostdlib -L$(LIBDIR)
 
-.PHONY: all clean
+.PHONY: all clean install-headers
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS) $(BUILDDIR)/boot.o
@@ -22,6 +23,9 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c $(BUILDDIR)
 
 $(BUILDDIR):
 	mkdir $@
+
+install-headers:
+	cp -r include/* $(SYSROOT)$(PREFIX)/include
 
 clean:
 	rm -f $(BUILDDIR)/*.o

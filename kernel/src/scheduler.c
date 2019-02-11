@@ -1,5 +1,5 @@
 #include <scheduler.h>
-#include <libk/stdio.h>
+#include <stdio.h>
 
 static Process *current_process = NULL;
 static int is_started = 0;

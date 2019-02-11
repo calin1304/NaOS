@@ -1,6 +1,8 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
+#include <stdint.h>
+
 #define BP __asm__ __volatile__("xchgw %bx, %bx");
 
 #define ASM_DUMP_REG_32(reg, var) \
