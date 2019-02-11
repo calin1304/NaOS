@@ -17,6 +17,9 @@ string/strlen.o \
 string/strncmp.o \
 string/strstr.o \
 string/strtok.o \
+ctype/isalpha.o \
+ctype/tolower.o \
+ctype/toupper.o \
 
 LIBK_CFLAGS := $(CFLAGS) -ffreestanding -mno-red-zone -D__is_libk
 LIBK_OBJS=$(OBJS:.o=.libk.o)
@@ -35,5 +38,5 @@ $(LIBK_OBJS): %.libk.o: %.c
 
 clean:
 	rm -f $(BINARIES) *.a
-	rm -f $(LIBK_OBJS)
+	rm -f $(OBJS) $(LIBK_OBJS)
 

@@ -9,7 +9,7 @@
 #include "utils.h"
 
 #include <libk/stdio.h>
-#include <libk/ctype.h>
+#include <ctype.h>
 
 #define ROOT_DIRECTORY_START_LBA 19
 #define FAT_START_LBA 1

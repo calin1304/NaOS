@@ -24,5 +24,6 @@ kernel:
 	$(MAKE) -C kernel
 
 clean:
+	$(MAKE) -C libc clean
 	$(MAKE) -C kernel clean
 

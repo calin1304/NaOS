@@ -1,6 +1,6 @@
 #include "vfs.h"
 
-#include <libk/ctype.h>
+#include <ctype.h>
 #include <string.h>
 #include <libk/stdlib.h>
 
