@@ -80,9 +80,7 @@ void t1()
 
 void enter_userspace()
 {
-    //FIXME: Page fault on kernel stack
-    void * kernel_stack = 0x7c00;//malloc(4096);
-    install_tss(0x10, kernel_stack);
+    install_tss(0x10, malloc(PAGE_SIZE) + PAGE_SIZE);
     __asm__ __volatile__("cli");
     // Setup userspace data segments
     __asm__ __volatile__("mov $0x23, %ax\n\t"
