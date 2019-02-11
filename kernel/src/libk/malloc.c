@@ -42,12 +42,11 @@ int heap_has_available_memory(unsigned int s)
 
 void heap_extend(unsigned int s)
 {
-    int pageCount = (s / PAGE_SIZE) + (s % PAGE_SIZE);
-    while (pageCount) {
+    int pageCount = (s / PAGE_SIZE) + (s / PAGE_SIZE == 0);
+    while (pageCount--) {
         void *p = pmm_alloc_block();
         vmm_map(p, heapSegmentEnd);
         heapSegmentEnd += PAGE_SIZE;
-        --pageCount;
     }
 }
 
