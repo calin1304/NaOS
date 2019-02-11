@@ -11,6 +11,7 @@
 #include <scheduler.h>
 #include <process/process.h>
 #include "multiboot.h"
+#include <fs/tar.h>
 
 #include <libk/stdio.h>
 #include <libk/stdlib.h>
@@ -102,6 +103,26 @@ void enter_userspace()
                          "1:");
 }
 
+void* find_module(const char *filename, multiboot_info_t *mbt)
+{
+    void *ret = NULL;
+    multiboot_module_t *modules = (multiboot_module_t *)mbt->mods_addr;
+    for (int i = 0; i < mbt->mods_count; ++i) {
+        if (!strcmp(modules[i].cmdline, filename)) {
+            LOG("Found module at %p", modules[i].mod_start);
+            size_t mod_size = modules[i].mod_end - modules[i].mod_start;
+            LOG("Module size %d bytes", mod_size);
+            ret = malloc(mod_size);
+            LOG("Moving module to %p", ret);
+            memcpy(ret, modules[i].mod_start, mod_size);
+            LOG("Moved module to %p", ret);
+            // ret = modules[i].mod_start;
+            break;
+        }
+    }
+    return ret;
+}
+
 void kmain(multiboot_info_t *mbt, unsigned int magic)
 {
     // Make a NULL stack frame to signal backtrace to stop
@@ -124,8 +145,13 @@ void kmain(multiboot_info_t *mbt, unsigned int magic)
 
     console_init(&console);
     print_multiboot_info(mbt);
-    Process p0 = create_process(0, t0);
-    Process p1 = create_process(1, t1);
+    /* I think modules loaded by grub are not mapped in vspace so map them */
+    tar_header_t *initrd = find_module("/boot/naos.initrd", mbt);
+    char *init = tar_open(initrd, "initrd/init");
+    LOG("%s", init);
+
+    Process p0 = create_process(t0);
+    Process p1 = create_process(t1);
     scheduler_add(&p0);
     scheduler_add(&p1);
     enter_userspace();

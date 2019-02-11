@@ -8,12 +8,16 @@ KERNEL := kernel/ker.bin
 ISODIR := isodir
 
 .PHONY: all
-all: kernel iso
+all: kernel initrd iso
 
 .PHONY: iso
 iso:	
-	cp -f $(KERNEL) $(ISODIR)/
+	cp -f $(KERNEL) $(ISODIR)/boot/
 	mkisofs -R -b boot/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table -o bootcd.iso isodir
+
+.PHONY: initrd
+initrd:
+	tar -c -f $(ISODIR)/boot/naos.initrd initrd/*
 
 .PHONY: kernel
 kernel:
