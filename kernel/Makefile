@@ -3,7 +3,7 @@ CFLAGS := $(CFLAGS) -Iincldue -I$(SYSROOT)$(PREFIX)/include -mno-80387 -D__is_li
 SRCDIR := src
 BUILDDIR := .obj
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
-OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:%.c=%.o))
+OBJECTS := $(SOURCES:%.c=%.o)
 LIBS := -lgcc -lk
 LIBDIR=../libc/
 TARGET := ker.bin
