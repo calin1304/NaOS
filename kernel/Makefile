@@ -1,7 +1,7 @@
 PREFIX=/usr
-CFLAGS := $(CFLAGS) -Iincldue -I$(SYSROOT)$(PREFIX)/include -mno-80387 -D__is_libk
+CFLAGS_INCLUDES := -Iinclude -I$(SYSROOT)/include -I$(SYSROOT)/usr/include
+CFLAGS := $(CFLAGS) $(CFLAGS_INCLUDES) -ffreestanding -D__is_libk
 SRCDIR := src
-BUILDDIR := .obj
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
 OBJECTS := $(SOURCES:%.c=%.o)
 LIBS := -lgcc -lk
@@ -12,23 +12,11 @@ LDFLAGS := -nostdlib -L$(LIBDIR)
 .PHONY: all clean install-headers
 all: $(TARGET)
 
-$(TARGET): $(OBJECTS) $(BUILDDIR)/boot.o
+$(TARGET): $(SRCDIR)/boot.o $(OBJECTS)
 	$(CC) -o $@ -T linker.ld $(LDFLAGS) $^ $(LIBS)
 
-$(BUILDDIR)/boot.o: $(SRCDIR)/boot.asm
-	$(AS) $(AS_FLAGS) $^ -o $@
-
-$(BUILDDIR)/%.o: $(SRCDIR)/%.c $(BUILDDIR)
-	$(CC) -c -o $@ $(CFLAGS) $<
-
-$(BUILDDIR):
-	mkdir $@
-
 install-headers:
-	cp -r include/* $(SYSROOT)$(PREFIX)/include
+	cp -r include/* $(SYSROOT)/include
 
 clean:
-	rm -f $(BUILDDIR)/*.o
-	rm -f $(OBJECTS)
-	rm -f $(TARGET)
-	rm -f boot.o
+	-rm -f $(OBJECTS) $(TARGET) $(SRCDIR)/boot.o
