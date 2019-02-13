@@ -1,38 +1,12 @@
-ARCH := i686-elf
-CC := $(ARCH)-gcc
-LD := $(ARCH)-ld
-AS := $(ARCH)-as
-
 PREFIX=/usr
 
-CFLAGS=-Wall -Wextra -std=c99 -Iinclude -I$(SYSROOT)$(PREFIX)/include
+CFLAGS=-Wall -Wextra -std=c99 -Iinclude -I$(SYSROOT)/include -I$(SYSROOT)/usr/include
 
-OBJS=\
-string/memcpy.o \
-string/memset.o \
-string/strchr.o \
-string/strcmp.o \
-string/strcpy.o \
-string/strlen.o \
-string/strncmp.o \
-string/strstr.o \
-string/strtok.o \
-ctype/isalpha.o \
-ctype/tolower.o \
-ctype/toupper.o \
-stdio/printf.o \
-stdio/putchar.o \
-stdio/puts.o \
-stdio/sprintf.o \
-stdio/vprintf.o \
-stdio/vsprintf.o \
-stdio/fopen.o \
-stdio/fread.o \
-stdlib/malloc.o \
-stdlib/free.o \
+SOURCES := $(shell find . -type f -name '*.c')
+OBJECTS := $(SOURCES:%.c=%.o)
 
 LIBK_CFLAGS := $(CFLAGS) -ffreestanding -mno-red-zone -D__is_libk
-LIBK_OBJS=$(OBJS:.o=.libk.o)
+LIBK_OBJS := $(OBJECTS:%.o=%.libk.o)
 
 BINARIES=libk.a
 
@@ -47,9 +21,9 @@ $(LIBK_OBJS): %.libk.o: %.c
 	$(CC) -c $(LIBK_CFLAGS) $< -o $@
 
 install-headers:
-	cp -r include/* $(SYSROOT)$(PREFIX)/include
+	cp -r include/* $(SYSROOT)/include
 
 clean:
-	rm -f $(BINARIES) *.a
-	rm -f $(OBJS) $(LIBK_OBJS)
+	-rm -f $(BINARIES) *.a
+	-rm -f $(OBJECTS) $(LIBK_OBJS)
 
