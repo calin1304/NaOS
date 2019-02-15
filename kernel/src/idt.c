@@ -19,6 +19,22 @@ typedef unsigned int uword_t;
 
 struct interrupt_frame;
 
+struct IDTEntry {
+    uint16_t    baseLo;
+    uint16_t    selector;
+    uint8_t     reserved; // = 0
+    uint8_t     flags;
+    uint16_t    baseHi;
+} __attribute__((packed));
+
+struct IDTPtr {
+    uint16_t limit;
+    uint32_t base;
+} __attribute__((packed));
+
+struct IDTEntry    idt[256];
+struct IDTPtr      idtp;
+
 #define ISR(name) static void __attribute__((interrupt)) name(struct interrupt_frame *frame)
 #define ISRE(name) static void __attribute__((interrupt)) name(struct interrupt_frame *frame, uword_t errorCode)
 #define HLT __asm__("cli\n\thlt");
