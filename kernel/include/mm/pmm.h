@@ -7,7 +7,7 @@
 
 typedef uint32_t paddr;
 
-void pmm_init(multiboot_info_t *mbt);
+void pmm_init(void *bitmap, multiboot_info_t *mbt);
 void* pmm_alloc_block();
 void pmm_free_block(void*);
 

@@ -14,7 +14,7 @@
 extern void _symbol_KERNEL_START;
 extern void _symbol_KERNEL_END;
 
-uint32_t *pmm_bitmap = &_symbol_KERNEL_END;
+uint32_t *pmm_bitmap = 0;
 uint32_t pmm_bitmap_block_count = 0;
 
 static void set_block(int i)
@@ -45,10 +45,11 @@ static unsigned int test_block(unsigned int i)
     return TEST_BIT(*p, i % (sizeof(uint32_t)));
 }
 
-void pmm_init(multiboot_info_t *mbt)
+void pmm_init(void *bitmap, multiboot_info_t *mbt)
 {
     // Reserver blocks occupied by bitmap
     // TODO: Compute size of bitmap and reserver blocks based on that
+    pmm_bitmap = bitmap;
     set_block(ADDR_TO_BLOCK(pmm_bitmap));
     // Compute number of blocks in memory map
     multiboot_memory_map_t *mmap = (multiboot_memory_map_t*)mbt->mmap_addr;

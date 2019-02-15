@@ -141,8 +141,10 @@ void kmain(multiboot_info_t *mbt, unsigned int magic)
     init_pics(0x20, 0x28);
     outb(PIC1_DATA, 0xFC); // Umask interrupts
     
+    void *grub_mods_end = find_modules_end(mbt);
+
     idt_init();
-    pmm_init(mbt);
+    pmm_init(grub_mods_end, mbt);
     vmm_init();
 
     console_init();
