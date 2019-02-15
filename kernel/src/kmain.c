@@ -105,22 +105,24 @@ void enter_userspace()
 
 void* find_module(const char *filename, multiboot_info_t *mbt)
 {
-    void *ret = NULL;
+void *get_loaded_module(const char *s, multiboot_info_t *mbt)
+{
     multiboot_module_t *modules = (multiboot_module_t *)mbt->mods_addr;
     for (int i = 0; i < mbt->mods_count; ++i) {
-        if (!strcmp(modules[i].cmdline, filename)) {
-            LOG("Found module at %p", modules[i].mod_start);
-            size_t mod_size = modules[i].mod_end - modules[i].mod_start;
-            LOG("Module size %d bytes", mod_size);
-            ret = malloc(mod_size);
-            LOG("Moving module to %p", ret);
-            memcpy(ret, modules[i].mod_start, mod_size);
-            LOG("Moved module to %p", ret);
-            // ret = modules[i].mod_start;
-            break;
+        if (!strcmp(modules[i].cmdline, s)) {
+            // size_t mod_size = modules[i].mod_end - modules[i].mod_start;
+            // ret = malloc(mod_size);
+            // memcpy(ret, modules[i].mod_start, mod_size);
+            return modules[i].mod_start;
         }
+        }
+    return 0;
     }
-    return ret;
+
+void *find_modules_end(multiboot_info_t *mbt)
+{
+    multiboot_module_t *modules = (multiboot_module_t *)mbt->mods_addr;
+    return modules[mbt->mods_count-1].mod_end;
 }
 
 void kmain(multiboot_info_t *mbt, unsigned int magic)
