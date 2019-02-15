@@ -9,7 +9,7 @@
 void vprintf(const char *format, va_list args)
 {
     #ifdef __is_libk
-    console_vprintf(&console, format, args);
+    console_vprintf(format, args);
     #else
 
     #endif

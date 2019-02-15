@@ -143,7 +143,7 @@ void kmain(multiboot_info_t *mbt, unsigned int magic)
     pmm_init(mbt);
     vmm_init();
 
-    console_init(&console);
+    console_init();
     print_multiboot_info(mbt);
     /* I think modules loaded by grub are not mapped in vspace so map them */
     tar_header_t *initrd = find_module("/boot/naos.initrd", mbt);

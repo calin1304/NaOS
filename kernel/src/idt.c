@@ -42,8 +42,6 @@ static void idt_load(struct IDTPtr *idt_ptr)
     );
 }
 
-extern Console console;
-
 ISR(isr_default)
 {
     HLT;
@@ -119,7 +117,7 @@ ISR(isr_keyboard)
         *  shift, alt, or control keys... */
     } else {
         char c = keyboardUS[scancode];
-        console_put_char(&console, c);
+        console_put_char(c);
     }
     pic_ack(PIC1);
 }
