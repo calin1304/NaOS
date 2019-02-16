@@ -1,25 +1,45 @@
 ENTRY(_start)
 
+magic = 0x1BADB002;
+flags = 3;
+checksum = -(magic + flags);
+
 SECTIONS
 {	. = 1M;
 	_symbol_KERNEL_START = .;
-	.text BLOCK(4K) : ALIGN(4K)
+    .multiboot ALIGN(4) :
+    {
+        LONG(magic)     /* MAGIC*/
+        LONG(flags)     /* FLAGS */
+        LONG(checksum)  /* CHECKSUM */
+    }
+    .bss ALIGN(16) :
+    {
+        _symbol_stack_bottom = .;
+        src/boot.o(.bss); /* stack */
+        . += 4K;
+        _symbol_stack_top = .;
+    }
+    .text ALIGN(4K) :
+    {
+        src/boot.o(.text);
+    }
+	.text ALIGN(4K) :
 	{
-		*(.multiboot)
-		*(.text)
+		*(.text);
 	}
-	.rodata BLOCK(4K) : ALIGN(4K)
+	.rodata ALIGN(4K) :
 	{
-		*(.rodata)
+		*(.rodata);
 	}
-	.data BLOCK(4K) : ALIGN(4K)
+	.data ALIGN(4K) :
 	{
-		*(.data)
+		*(.data);
 	}
-	.bss BLOCK(4K) : ALIGN(4K)
+	.bss ALIGN(4K) :
 	{
-		*(COMMON)
-		*(.bss)
+		*(COMMON);
+		*(.bss);
 	}
 	_symbol_KERNEL_END = .;
 }

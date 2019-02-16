@@ -12,11 +12,11 @@ LDFLAGS := -nostdlib -L$(LIBDIR)
 .PHONY: all clean install-headers
 all: $(TARGET)
 
-$(TARGET): $(SRCDIR)/boot.o $(OBJECTS)
+$(TARGET): $(OBJECTS)
 	$(CC) -o $@ -T linker.ld $(LDFLAGS) $^ $(LIBS)
 
 install-headers:
 	cp -r include/* $(SYSROOT)/include
 
 clean:
-	-rm -f $(OBJECTS) $(TARGET) $(SRCDIR)/boot.o
+	-rm -f $(OBJECTS) $(TARGET)
