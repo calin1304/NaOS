@@ -125,6 +125,29 @@ void *find_modules_end(multiboot_info_t *mbt)
     return modules[mbt->mods_count-1].mod_end;
 }
 
+/*
+ * Check if the CPU supports CPUID by testing ID bit (0x200000) in EFLAGS.
+ * This bit is modifiable only when CPUID is supported.
+ * If function returns a non-zero value then CPUID is available.
+ */
+int is_cpuid_available()
+{
+    int result;
+    __asm__ __volatile__
+        ( "pushf\n\t"                   // Save EFLAGS
+          "pushf\n\t"                   // Save a working copy of EFLAGS
+          "xorl $0x200000, (%%esp)\n\t" // Invert ID bit in EFLAGS
+          "popf\n\t"                    // Store new value in EFLAGS
+          "pushf\n\t"                   // Get EFLAGS again
+          "popl %%eax\n\t"              // Store EFLAGS in EAX
+          "xorl (%%esp), %%eax\n\t"     // See what flags changed in EFLAGS
+          "andl $0x200000, %0\n\t"      // See if ID bit changed in EFLAGS
+          "popf\n\t"                    // Restore initial EFLAGS value
+        : "=a" (result)
+        );
+    return result;
+}
+
 void kmain(multiboot_info_t *mbt, unsigned int magic)
 {
     // Make a NULL stack frame to signal backtrace to stop
