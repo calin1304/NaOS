@@ -1,7 +1,10 @@
+/** This module implements the virtual memory manager. */
+
 #include "mm/vmm.h"
 
 #include <string.h>
 
+/** Page directory entry. This should be aligend to page boundary. */
 struct pd_entry {
     uint8_t present : 1;
     uint8_t writable : 1;
@@ -15,6 +18,7 @@ struct pd_entry {
     uint32_t pt_paddr : 20;
 } __attribute__((packed));
 
+/** Page table entry. This should be aligend to page boundary. */
 struct pt_entry {
     uint8_t present : 1;
     uint8_t writable : 1;
@@ -46,8 +50,11 @@ struct page_table {
 typedef struct page_directory page_directory_t;
 typedef struct page_table page_table_t;
 
+/** Given a virtual address, get the corresponding page directory offset. */
 #define VADDR_PD_OFFSET(x) (((x) >> 22))
+/** Given a virtual address, get the corresponding page table offset. */
 #define VADDR_PT_OFFSET(x) (((x) >> 12) & 0x3ff)
+/** Given a virtual address, get the corresponding offset in a page. */
 #define VADDR_PAGE_OFFSET(x) ((x) & 0xfff)
 
 #define PD_ENTRY(pd, vaddr) &((pd).entries[VADDR_PD_OFFSET(vaddr)])
@@ -61,20 +68,29 @@ typedef struct page_table page_table_t;
 #define IS_VALID_PDE(x) (*(uint32_t*)(x) != 0)
 
 page_directory_t pdir;
+/** Address of the currently active page directory. */
 page_directory_t *current_dir = NULL;
 
+/** Initialize the page directory entry at address `pde`. */
 static void init_pd_entry(pd_entry_t *pde)
 {
+    // Allocate a block to store the page table.
+    // TODO: Implement a pmm_allocz that zeroes the allocated block.
     page_table_t *pt = pmm_alloc_block();
     memset(pt, 0, sizeof(page_table_t));
     pde->present = 1;
     pde->writable = 1;
-    pde->user = 1;
+    pde->user = 1; // TODO: Do we want this to be set?
+    // Set address of page table corresponding to this page directory entry.
     pde->pt_paddr = PADDR_TO_FRAME(pt);
 }
 
+/** This function will try to map a physical address to the same virtual address. */
 static void identity_map(page_directory_t *dir, paddr start, size_t pages)
 {
+    /* TODO: Extract function that maps a single page and call that from here to
+             map multiple pages.
+     */
     vaddr currAddr = start;
     for (; pages; --pages, currAddr += PAGE_SIZE) {
         pd_entry_t *pde = PD_ENTRY(*dir, currAddr);
@@ -90,6 +106,7 @@ static void identity_map(page_directory_t *dir, paddr start, size_t pages)
     }
 }
 
+/** Initialize the virtual memory manager. */
 void vmm_init()
 {
     identity_map(&pdir, 0x0, 1024);
@@ -97,6 +114,7 @@ void vmm_init()
     pmm_enable_paging();
 }
 
+/** Map physical address `p` to virtual address `v`. */
 void vmm_map(paddr p, vaddr v)
 {
     pd_entry_t *pde = PD_ENTRY(*current_dir, v);
@@ -111,6 +129,7 @@ void vmm_map(paddr p, vaddr v)
     pte->page_paddr = PADDR_TO_FRAME(p)
 }
 
+/** Make a deep copy of a page directory. */
 page_directory_t* vmm_copy_pdir(page_directory_t *pdir)
 {
     //TODO: Should allocate to page boundary with malloc to map in vspace
@@ -127,11 +146,13 @@ page_directory_t* vmm_copy_pdir(page_directory_t *pdir)
     return ret;
 }
 
+/** Get address of active page directory. */
 page_directory_t* vmm_get_pdir()
 {
     return current_dir;
 }
 
+/** Set active page directory address. */
 void vmm_set_pdir(page_directory_t *new_pdir)
 {
     current_dir = new_pdir;
