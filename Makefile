@@ -5,13 +5,13 @@ export AS := $(ARCH)-as
 
 export SYSROOT=${abspath ./sysroot}
 
-export CFLAGS := -Wall -Wextra -ffreestanding -std=c99 -mno-red-zone
+export CFLAGS := -Wall -Wextra -ffreestanding -std=c99 -mno-red-zone -mno-80387
 
 KERNEL := kernel/ker.bin
 ISODIR := isodir
 
-.PHONY: all iso initrd libc kernel install-headers clean
-all: libc kernel initrd iso
+.PHONY: all iso initrd libc kernel init install-headers clean
+all: libc kernel init initrd iso
 
 iso:	
 	cp -f $(KERNEL) $(ISODIR)/boot/

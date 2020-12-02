@@ -9,7 +9,7 @@ LIBDIR=../libc/
 TARGET := ker.bin
 LDFLAGS := -nostdlib -L$(LIBDIR)
 
-.PHONY: all clean install-headers
+.PHONY: all clean install-headers $(TARGET)
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)

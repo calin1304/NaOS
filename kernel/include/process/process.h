@@ -17,15 +17,17 @@ enum {
 };
 
 typedef struct Process_ {
-    int id;
+    size_t id;
     int state;
-    // PDirectory *pdir;
+    page_directory_t *pdir;
     Thread threads[MAX_THREADS_PER_PROCESS];    
     struct Process_ *next;
     void *eip;
+    void *stack0;
+    void *stack3;
     syscall_frame_t regs;
 } Process;
 
-Process create_process(int id, entryFn entry);
+Process create_process(entryFn entry);
 
 #endif
