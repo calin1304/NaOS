@@ -11,6 +11,7 @@
 #include <scheduler.h>
 #include <process/process.h>
 #include "multiboot.h"
+#include <drivers/ata/ata.h>
 #include <fs/tar.h>
 
 #include <stdio.h>
@@ -103,8 +104,43 @@ void enter_userspace()
                          "1:");
 }
 
-void* find_module(const char *filename, multiboot_info_t *mbt)
+#include <elf.h>
+
+void* elf_load(char *p)
 {
+    // FILE *f = fopen(path, "r");
+
+    // Process *process = malloc(sizeof(Process));
+    // process->id = get_next_availablePID();
+    // process->state = PROCESS_PAUSED;
+    // process->pdir = pmm_alloc_block();
+    // vmm_map_page(process->pdir, process->pdir);
+    // memset(process->pdir, 0, sizeof(PDirectory));
+    // vmm_identity_map(process->pdir, 0x0, 1024);
+    
+    // uint8_t *buffer = malloc(f->size);
+    // fread(buffer, sizeof(uint8_t), f->size, f);
+    Elf32Header *elf_header = p;
+    Elf32ProgramHeader *elfProgramHeader = p + elf_header->e_phoff;
+    Elf32SectionHeader *elfSectionHeader = p + elf_header->e_shoff;
+    for (int i = 0; i < elf_header->e_shnum; ++i) {
+        if (elfSectionHeader[i].sh_addr != 0) {
+            uint8_t *sec = malloc(4096);
+            vmm_map(sec, elfSectionHeader[i].sh_addr);
+            // if (!pdir_vaddr_is_mapped(process->pdir, elfSectionHeader[i].sh_addr)) {
+            //      sec = pmm_alloc_block();
+            //     pdir_map_page(process->pdir, sec, (void*)elfSectionHeader[i].sh_addr);
+            // } else {
+            //     sec = (uint8_t*)pdir_get_paddr(process->pdir, elfSectionHeader[i].sh_addr);
+            // }
+            uint8_t *dat = p + elfSectionHeader[i].sh_offset;
+            memcpy(elfSectionHeader[i].sh_addr, dat, elfSectionHeader[i].sh_size);
+        }
+    }
+    int (*entry)() = elf_header->e_entry;
+    return entry;
+}
+
 void *get_loaded_module(const char *s, multiboot_info_t *mbt)
 {
     multiboot_module_t *modules = (multiboot_module_t *)mbt->mods_addr;
@@ -115,9 +151,9 @@ void *get_loaded_module(const char *s, multiboot_info_t *mbt)
             // memcpy(ret, modules[i].mod_start, mod_size);
             return modules[i].mod_start;
         }
-        }
-    return 0;
     }
+    return 0;
+}
 
 void *find_modules_end(multiboot_info_t *mbt)
 {
@@ -140,7 +176,7 @@ void kmain(multiboot_info_t *mbt, unsigned int magic)
     
     init_pics(0x20, 0x28);
     outb(PIC1_DATA, 0xFC); // Umask interrupts
-    
+
     void *grub_mods_end = find_modules_end(mbt);
 
     idt_init();
@@ -148,12 +184,25 @@ void kmain(multiboot_info_t *mbt, unsigned int magic)
     vmm_init();
 
     console_init();
+    printf("kmain addr: %p\n", kmain);
     print_multiboot_info(mbt);
+    for (;;);
     /* I think modules loaded by grub are not mapped in vspace so map them */
-    tar_header_t *initrd = find_module("/boot/naos.initrd", mbt);
+    tar_header_t *initrd = get_loaded_module("/boot/naos.initrd", mbt);
     char *init = tar_open(initrd, "initrd/init");
-    LOG("%s", init);
-
+    LOG("init loaded at %p\n", init)
+    // void (*entry)() = elf_load(init);
+    // LOG("%p", entry);
+    
+    ATADevice atadev[4];
+    ata_init_device(&atadev[0], ATA_PRIMARY_BUS_IO_BASE, 
+                     ATA_PRIMARY_BUS_CONTROL_BASE, 0);
+    ata_init_device(&atadev[1], ATA_PRIMARY_BUS_IO_BASE, 
+                     ATA_PRIMARY_BUS_CONTROL_BASE, 1);
+    ata_init_device(&atadev[2], ATA_SECONDARY_BUS_IO_BASE, 
+                     ATA_SECONDARY_BUS_CONTROL_BASE, 0);
+    ata_init_device(&atadev[3], ATA_SECONDARY_BUS_IO_BASE, 
+                     ATA_SECONDARY_BUS_CONTROL_BASE, 0);
     Process p0 = create_process(t0);
     Process p1 = create_process(t1);
     scheduler_add(&p0);
