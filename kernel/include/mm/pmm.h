@@ -11,6 +11,7 @@ void pmm_init(void *bitmap, multiboot_info_t *mbt);
 void* pmm_alloc_block();
 void pmm_free_block(void*);
 
+// TODO: Move these functions to vmm
 void pmm_load_pdbr(void *pdAddr);
 void pmm_enable_paging();
 void pmm_disable_paging();

@@ -109,6 +109,7 @@ void pmm_load_pdbr(void *pdAddr)
 
 void pmm_enable_paging()
 {
+    //TODO: There is more than one paging mode available. Make sure we are enabling the right one.
     __asm__ __volatile__ (
         "movl %%cr0, %%eax\n"
         "orl $0x80000001, %%eax\n"
