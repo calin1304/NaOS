@@ -24,7 +24,8 @@ libc:
 	$(MAKE) -C libc
 
 kernel:
-	$(MAKE) -C kernel
+	cd kernel && stack runhaskell Shakefile.hs
+
 
 install-headers:
 	$(MAKE) -C libc install-headers
