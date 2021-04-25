@@ -1,22 +1,3 @@
-export ARCH := i386-elf
-export CC := $(ARCH)-gcc
-export LD := $(ARCH)-ld
-export AS := $(ARCH)-as
-export AR := $(ARCH)-ar
-
-export SYSROOT=${abspath ./sysroot}
-
-# `-mgeneral-regs-only` is used because compiler complains that no 80387 instructions are
-# allowed in exception service routines.
-export CFLAGS := \
-	-Wall \
-	-Wextra \
-	-ffreestanding \
-	-std=c99 \
-	-mno-red-zone \
-	-mgeneral-regs-only \
-	-Ikernel/include
-
 KERNEL := kernel/ker.bin
 ISODIR := isodir
 
