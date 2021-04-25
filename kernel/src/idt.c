@@ -74,7 +74,6 @@ ISR_MSG(isr13, "[!] Exception 13: General protection fault\n");
 ISRE(isr14)
 {
     printf("[!] Exception 14 - Page fault - ");
-    
     if (errorCode & 0x1) {
         printf("Page-protection violation ");
     } else {
@@ -125,9 +124,8 @@ void isr_timer(syscall_frame_t frame)
 }
 
 ISR(isr_keyboard)
-{    
+{
     uint8_t scancode = inb(0x60);
-    
     if (scancode & 0x80) {
         /* You can use this one to see if the user released the
         *  shift, alt, or control keys... */
@@ -160,7 +158,7 @@ static void* idt_get_gate(uint8_t num)
     return (void*)ret;
 }
 
-void idt_init() 
+void idt_init()
 {
     for (int i = 0; i < 256; ++i) {
         idt_set_gate(i, (uint32_t)isr_default,  0x8, 0x8e);
@@ -176,6 +174,5 @@ void idt_init()
     idt_set_gate(0x20,  (uint32_t)_isr_timer,      0x8, 0x8e);
     idt_set_gate(0x21,  (uint32_t)isr_keyboard,   0x8, 0x8e);
     idt_set_gate(0x80,  (uint32_t)_isr_128,       0x8, 0xee);
-    
     idt_install();
 }

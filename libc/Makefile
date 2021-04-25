@@ -1,6 +1,12 @@
 PREFIX=/usr
 
-CFLAGS=-Wall -Wextra -std=c99 -Iinclude -I$(SYSROOT)/include -I$(SYSROOT)/usr/include
+CFLAGS=-Wall \
+	   -Wextra \
+	   -std=c99 \
+	   -Iinclude \
+	   -I$(SYSROOT)/include \
+	   -I$(SYSROOT)/usr/include \
+	   -I../kernel/include
 
 SOURCES := $(shell find . -type f -name '*.c')
 OBJECTS := $(SOURCES:%.c=%.o)

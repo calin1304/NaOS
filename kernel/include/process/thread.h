@@ -5,12 +5,16 @@
 
 #define DEFAULT_STACK_SIZE 4096
 
-#define THREAD_PAUSED 0
-#define THREAD_RUNNING 1
+enum ThreadState {
+    THREAD_STATE_PAUSED,
+    THREAD_STATE_RUNNING
+};
 
-#define THREAD_PRIORITY_HIGH 0
-#define THREAD_PRIORITY_MEDIUM 1
-#define THREAD_PRIORITY_LOW 2
+enum ThreadPriority {
+    THREAD_PRIORITY_LOW,
+    THREAD_PRIORITY_NORMAL,
+    THREAD_PRIORITY_HIGH
+};
 
 typedef int(*entryFn)();
 
@@ -33,8 +37,8 @@ typedef struct Thread_ {
     void                *stackLimit;
     void                *kernelStack;
     entryFn             entry;
-    int                 priority;
-    int                 state;
+    enum ThreadPriority priority;
+    enum ThreadState    state;
     TrapFrame           trapFrame;
 } Thread;
 

@@ -11,7 +11,7 @@ Process create_process(int id, entryFn entry)
 {
     Process ret = {
         .id = id,
-        .state = PROCESS_PAUSED,
+        .state = PROCESS_STATE_PAUSED,
         .eip = (void*)entry,
         .next = NULL
     };

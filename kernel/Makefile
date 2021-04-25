@@ -1,12 +1,17 @@
 PREFIX=/usr
-CFLAGS_INCLUDES := -Iinclude -I$(SYSROOT)/include -I$(SYSROOT)/usr/include
-CFLAGS := $(CFLAGS) $(CFLAGS_INCLUDES) -ffreestanding -D__is_libk
+CFLAGS_INCLUDES := \
+	-Iinclude \
+	-Ilibc/include \
+	-I../libc/include \
+	-I$(SYSROOT)/include \
+	-I$(SYSROOT)/usr/include
+CFLAGS := $(CFLAGS) $(CFLAGS_INCLUDES) -ffreestanding # -D__is_libk
 SRCDIR := src
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
 OBJECTS := $(SOURCES:%.c=%.o)
 LIBS := -lgcc -lk
 LIBDIR=../libc/
-TARGET := ker.bin
+TARGET := kernel.elf
 LDFLAGS := -nostdlib -L$(LIBDIR)
 
 .PHONY: all clean install-headers

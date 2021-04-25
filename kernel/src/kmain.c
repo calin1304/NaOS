@@ -16,6 +16,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define HALT for(;;)
+
 void print_multiboot_info(multiboot_info_t *mbt)
 {
     if (GET_BIT(mbt->flags, 0)) {
@@ -44,7 +46,6 @@ void print_multiboot_info(multiboot_info_t *mbt)
     } else if (GET_BIT(mbt->flags, 5)) {
         printf("ELF Kernel header table availalbe at %p\n", mbt->u.elf_sec.addr);
     }
-    
     // Check for memory map
     if (GET_BIT(mbt->flags, 6)) {
         printf("Memory map available at %p\n", mbt->mmap_addr);
@@ -96,15 +97,13 @@ void enter_userspace()
     __asm__ __volatile__("pushf\n\t");
     __asm__ __volatile__("pop %eax\n\t"
                          "or $0x200, %eax\n\t" // Enable IF in EFLAGS
-                         "push %eax"); 
+                         "push %eax");
     __asm__ __volatile__("push $0x1b"); // Push userspace code segment selector
     __asm__ __volatile__("push $1f\n\t"
                          "iret\n\t"
                          "1:");
 }
 
-void* find_module(const char *filename, multiboot_info_t *mbt)
-{
 void *get_loaded_module(const char *s, multiboot_info_t *mbt)
 {
     multiboot_module_t *modules = (multiboot_module_t *)mbt->mods_addr;
@@ -148,40 +147,70 @@ int is_cpuid_available()
     return result;
 }
 
+void get_cpu_vendor_id(char vendor_id[13])
+{
+    __asm__ __volatile__
+        ( "mov $0x0, %%eax\n\t"
+          "cpuid\n\t"
+          "mov %%ebx,  (%0)\n\t"
+          "mov %%ecx, 4(%0)\n\t"
+          "mov %%edx, 8(%0)\n\t"
+        : "=r"(vendor_id)
+        :
+        : "%eax", "%ebx", "%ecx", "%edx"
+        );
+}
+
 void kmain(multiboot_info_t *mbt, unsigned int magic)
 {
     // Make a NULL stack frame to signal backtrace to stop
     __asm__ __volatile__("movl $0, -4(%ebp)");
 
+    // Initializing the PIT. The oscillator used runs at roughly 1.193182 MHz
     uint16_t count = 1193180 / 100;
-    outb(0x43, 0x36);
+    // Set PIT channel 0 to square wave generator
+    outb(0x43, 0x36); // 0011 0110
+    // Set reload value to 11931
     outb(0x40, count & 0xffff);
     outb(0x40, count >> 8);
     clock_init(&clock);
-    
-    gdt_init();
-    
+
+    gdt_init(); // Initialize global descriptor table
+
+    /* IRQs 0-8 are mapped to inetrupts 0x08 to 0x0f but interrupts 0-31 are reserved
+     * by the CPU so we have to remap IRQs 0-8 to some other interrupt numbers.
+     */
     init_pics(0x20, 0x28);
     outb(PIC1_DATA, 0xFC); // Umask interrupts
-    
+
     void *grub_mods_end = find_modules_end(mbt);
-
-    idt_init();
-    pmm_init(grub_mods_end, mbt);
-    vmm_init();
-
+    idt_init(); // Initialize interrupt descriptor table
+    pmm_init(grub_mods_end, mbt); // Initialize physical memory manager
+    vmm_init(); // Initialize virtual memory manager
     console_init();
     print_multiboot_info(mbt);
-    /* I think modules loaded by grub are not mapped in vspace so map them */
-    tar_header_t *initrd = find_module("/boot/naos.initrd", mbt);
-    char *init = tar_open(initrd, "initrd/init");
-    LOG("%s", init);
 
-    Process p0 = create_process(t0);
-    Process p1 = create_process(t1);
-    scheduler_add(&p0);
-    scheduler_add(&p1);
-    enter_userspace();
-    scheduler_start();
-    for(;;);
+    // Test for CPUID support;
+    printf("CPUID support: %x\n", is_cpuid_available() != 0);
+    char cpu_vendor[13];
+    get_cpu_vendor_id(cpu_vendor);
+    cpu_vendor[12] = '\0';
+    printf("CPU vendor: %x\n", cpu_vendor);
+    printf("CPU vendor: %x\n", cpu_vendor[4]);
+    printf("CPU vendor: %x\n", cpu_vendor[8]);
+
+    /* I think modules loaded by grub are not mapped in vspace so map them */
+    /* tar_header_t *initrd = find_module("/boot/naos.initrd", mbt); */
+    /* char *init = tar_open(initrd, "initrd/init"); */
+    /* LOG("%s", init); */
+
+    /* Process p0 = create_process(t0); */
+    /* Process p1 = create_process(t1); */
+    /* scheduler_add(&p0); */
+    /* scheduler_add(&p1); */
+    /* enter_userspace(); */
+    /* scheduler_start(); */
+
+    HALT;
 }
+
