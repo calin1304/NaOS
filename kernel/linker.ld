@@ -16,13 +16,13 @@ SECTIONS
     .bss ALIGN(16) :
     {
         _symbol_stack_bottom = .;
-        src/boot.o(.bss); /* stack */
+        _build/boot.o(.bss); /* stack */
         . += 4K;
         _symbol_stack_top = .;
     }
     .text ALIGN(4K) :
     {
-        src/boot.o(.text);
+        _build/boot.o(.text);
     }
 	.text ALIGN(4K) :
 	{
