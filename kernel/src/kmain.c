@@ -13,8 +13,8 @@
 #include "multiboot.h"
 #include <fs/tar.h>
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "libk/stdio.h"
+#include "libk/stdlib.h"
 
 #define HALT for(;;)
 

@@ -5,7 +5,7 @@ CFLAGS_INCLUDES := \
 	-I../libc/include \
 	-I$(SYSROOT)/include \
 	-I$(SYSROOT)/usr/include
-CFLAGS := $(CFLAGS) $(CFLAGS_INCLUDES) -ffreestanding # -D__is_libk
+CFLAGS := $(CFLAGS) $(CFLAGS_INCLUDES) -ffreestanding
 
 SRCDIR := src
 OBJ_DIR := _build
@@ -14,11 +14,9 @@ SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
 OBJECTS := $(patsubst $(SRCDIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 OBJ_DIRS := $(sort $(dir $(OBJECTS)))
 
-
-LIBS := -lgcc -lk
-LIBDIR=../libc/
+LIBS := -lgcc
 TARGET := kernel.elf
-LDFLAGS := -nostdlib -L$(LIBDIR)
+LDFLAGS := -nostdlib
 
 .PHONY: all clean install-headers
 all: $(OBJ_DIRS) $(TARGET)

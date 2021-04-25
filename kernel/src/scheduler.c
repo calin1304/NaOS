@@ -3,7 +3,7 @@
  * run and go through the list and run each process for a small amount of time.
  */
 #include <scheduler.h>
-#include <stdio.h>
+#include "libk/stdio.h"
 
 static Process *current_process = NULL;
 static int is_started = 0;

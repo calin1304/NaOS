@@ -15,14 +15,13 @@ export CFLAGS := \
 	-std=c99 \
 	-mno-red-zone \
 	-mgeneral-regs-only \
-	-Ilibc/include \
 	-Ikernel/include
 
 KERNEL := kernel/ker.bin
 ISODIR := isodir
 
-.PHONY: all iso initrd libc kernel install-headers clean
-all: libc kernel initrd iso
+.PHONY: all iso initrd kernel install-headers clean
+all: kernel initrd iso
 
 iso:
 	cp -f $(KERNEL) $(ISODIR)/boot/
@@ -31,17 +30,12 @@ iso:
 initrd:
 	tar -c -f $(ISODIR)/boot/naos.initrd initrd/*
 
-libc:
-	$(MAKE) -C libc
-
 kernel:
 	$(MAKE) -C kernel
 
 install-headers:
-	$(MAKE) -C libc install-headers
 	$(MAKE) -C kernel install-headers
 
 clean:
-	$(MAKE) -C libc clean
 	$(MAKE) -C kernel clean
 

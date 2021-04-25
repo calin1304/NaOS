@@ -1,6 +1,6 @@
 #include "mm/vmm.h"
 
-#include <string.h>
+#include "libk/string.h"
 
 struct pd_entry {
     uint8_t present : 1;

@@ -5,7 +5,7 @@
 #include <stdarg.h>
 
 #include "defines.h"
-#include <string.h>
+#include "libk/string.h"
 
 void console_init();
 

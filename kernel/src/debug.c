@@ -1,6 +1,6 @@
 #include "debug.h"
 
-#include <stdio.h>
+#include "libk/stdio.h"
 
 void backtrace()
 {

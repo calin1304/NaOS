@@ -1,8 +1,8 @@
 #include "mm/pmm.h"
 
-#include <string.h>
 #include <error.h>
 #include <utils.h>
+#include "libk/string.h"
 
 #define BLOCK_SIZE 4096
 

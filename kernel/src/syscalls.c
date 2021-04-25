@@ -1,6 +1,6 @@
 #include "syscalls.h"
 
-#include <stdio.h>
+#include "libk/stdio.h"
 #include <idt.h>
 
 void *syscalls[] = {

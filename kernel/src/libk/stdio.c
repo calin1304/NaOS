@@ -1,7 +1,50 @@
-#include <stdio.h>
+#include "libk/stdio.h"
 
 #include <stdint.h>
 #include <stdarg.h>
+
+#include <console.h>
+
+void *fopen(const char *filename, const char *mode)
+{
+    return vfsFOpen(filename, mode);
+}
+
+size_t fread(void *ptr, size_t size, size_t count, void *f)
+{
+    return vfs_fread(ptr, size, count, f);
+}
+
+void printf(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+}
+
+void putchar(int c)
+{
+    console_put_char((char)c);
+}
+
+void puts(const char *s)
+{
+    printf("%s\n", s);;
+}
+
+void sprintf(char *s, const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vsprintf(s, format, args);
+    va_end(args);
+}
+
+void vprintf(const char *format, va_list args)
+{
+    console_vprintf(format, args);
+}
 
 static const char *hexTable = "0123456789ABCDEF";
 
@@ -29,7 +72,7 @@ void vsprintf(char *s, const char *format, va_list args)
             } else if ('t' == '%') {
                 *(s++) = '%';
             }
-        } 
+        }
         else {
             *(s++) = *(p);
         }
