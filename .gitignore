@@ -1,11 +1,18 @@
 apps
-obj
-.obj
-build
-.vscode
-bx_enh_dbg.ini
 bochsrc.bxrc
-*.o
-*.iso
+bx_enh_dbg.ini
+.vscode
+
+# Build outputs
 *.bin
+_build
+build
+*.iso
 isodir
+*.o
+.obj
+obj
+
+# Nix and direnv stuff
+.envrc
+result

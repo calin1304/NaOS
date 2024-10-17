@@ -161,18 +161,25 @@ void get_cpu_vendor_id(char vendor_id[13])
         );
 }
 
+#define PIT_FREQ 1193182
+#define PIT_MODE_SQUARE_WAVE 0x06
+#define PIT_ACCESS_LO_HI 0x30
+
+#define PIT_PORT_CHANNEL_0 0x40
+#define PIT_PORT_CONTROL 0x43
+
 void kmain(multiboot_info_t *mbt, unsigned int magic)
 {
     // Make a NULL stack frame to signal backtrace to stop
     __asm__ __volatile__("movl $0, -4(%ebp)");
 
-    // Initializing the PIT. The oscillator used runs at roughly 1.193182 MHz
-    uint16_t count = 1193180 / 100;
+    // Initializing the PIT. The oscillator used runs at roughly 1.193182 MHz.
+    uint16_t count = PIT_FREQ / 100;
     // Set PIT channel 0 to square wave generator
-    outb(0x43, 0x36); // 0011 0110
-    // Set reload value to 11931
-    outb(0x40, count & 0xffff);
-    outb(0x40, count >> 8);
+    outb(PIT_PORT_CONTROL, PIT_ACCESS_LO_HI | PIT_MODE_SQUARE_WAVE);
+    // Set reload value to 11931 which means an output pulse every second I think?
+    outb(PIT_PORT_CHANNEL_0, count & 0xffff); // write lo byte
+    outb(PIT_PORT_CHANNEL_0, count >> 8); // write hi byte
     clock_init(&clock);
 
     gdt_init(); // Initialize global descriptor table

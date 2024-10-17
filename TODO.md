@@ -1,0 +1,7 @@
+- serial logging
+- task queue, process scheduler
+    - round-robin with no preemption
+    - preempt
+    - priorities
+- unit tests, sanity checks, functional test
+- build toolchain from source

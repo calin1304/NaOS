@@ -15,7 +15,7 @@ OBJECTS := $(patsubst $(SRCDIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 OBJ_DIRS := $(sort $(dir $(OBJECTS)))
 
 LIBS := -lgcc
-TARGET := kernel.elf
+TARGET := _build/kernel.elf
 LDFLAGS := -nostdlib
 
 .PHONY: all clean install-headers
