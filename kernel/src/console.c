@@ -123,6 +123,14 @@ void console_put_string(const char *s)
     }
 }
 
+void console_put_indent()
+{
+    console_put_char(' ');
+    console_put_char(' ');
+    console_put_char(' ');
+    console_put_char(' ');
+}
+
 void console_set_cursor_position(uint x, uint y)
 {
     console.cursorX = x;
@@ -143,22 +151,35 @@ void console_clear()
     console.bg = bg_;
 }
 
+void char_swap(char *p, char *q) {
+    char aux = *p; *p = *q; *q = aux;
+}
+
+void string_reverse_inplace(char *s)
+{
+    char *p = s;
+    while (*p) { ++p; }
+    --p;
+    while (s < p) { char_swap(s++, p--); }
+}
+
 void console_put_int_hex(uint32_t val)
 {
+    if (val == 0) {
+        console_put_string("0x0");
+        return;
+    }
     console_put_string("0x");
     uint i = 0;
-    // while (i < 8 && (val & 0xf0000000) == 0) {
-    //     val <<= 4;
-    //     i++;
-    // }
-    // if (!val) {
-    //     console_put_char('0');
-    //     return;
-    // }
-    for (; i < 8; ++i, val <<= 4) {
-        uint8_t c = hexTable[(val & 0xf0000000) >> 28];
-        console_put_char(c);
+    char out[9];
+    while (i < 8 && val != 0) {
+        char c = hexTable[(val & 0xf)];
+        out[i++] = c;
+        val >>= 4;
     }
+    out[i] = '\0';
+    string_reverse_inplace(out);
+    console_put_string(out);
 }
 
 void console_put_int_dec(uint32_t val)
@@ -190,30 +211,43 @@ void console_vprintf(const char *fmt, va_list args)
 {
     const char *p;
     for (p = fmt; *p != '\0'; ++p) {
-        if (*p == '%') {
-            char t = *(++p);
-            if (t == 'x' || t == 'p') {
-                console_put_int_hex(va_arg(args, uint32_t));
-            } else if (t == 'd') {
-                console_put_int_dec(va_arg(args, uint32_t));
-            } else if (t == 's') {
-                console_put_string(va_arg(args, const char *));
-            } else if (t == 'c') {
-                console_put_char(va_arg(args, int));
-            } else if ('t' == '%') {
-                console_put_char('%');
+        switch (*p) {
+            case '%': {
+                char t = *(++p);
+                switch (t) {
+                    case 'x':
+                    case 't':
+                        console_put_int_hex(va_arg(args, uint32_t));
+                        break;
+                    case 'd':
+                        console_put_int_dec(va_arg(args, uint32_t));
+                        break;
+                    case 's':
+                        console_put_string(va_arg(args, const char *));
+                        break;
+                    case 'c':
+                        console_put_char(va_arg(args, int));
+                        break;
+                    case '%':
+                        console_put_char('%');
+                        break;
+                }
             }
-        } else if (*p == '\\') {
-            char t = *(++p);
-            if (t == 'n') {
-                console_put_newline();
-            } else if (t == '\\') {
-                console_put_char('\\');
-            }
+                break;
+            case '\\':
+                switch (*(++p)) {
+                    case 'n':
+                        console_put_newline();
+                        break;
+                }
+                break;
+            default:
+                if (*p == '\t') {
+                    console_put_indent();
+                } else {
+                    console_put_char(*p);
+                }
         } 
-        else {
-            console_put_char(*p);
-        }
     }
 }
 
