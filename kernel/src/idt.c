@@ -35,10 +35,11 @@ struct IDTPtr {
 struct IDTEntry    idt[256];
 struct IDTPtr      idtp;
 
-#define ISR(name) static void __attribute__((interrupt)) name(struct interrupt_frame *frame)
-#define ISRE(name) static void __attribute__((interrupt)) name(struct interrupt_frame *frame, uword_t errorCode)
-#define HLT __asm__("cli\n\thlt");
-#define ISR_MSG(name, message) ISR(name){ UNUSED(frame); printf(#message); HLT;}
+#define INTERRUPT __attribute__((interrupt))
+#define ISR(name)  static INTERRUPT void name(struct interrupt_frame *frame)
+#define ISRE(name) static INTERRUPT void name(struct interrupt_frame *frame, uword_t errorCode)
+#define HALT __asm__("cli\n\thlt");
+#define ISR_MSG(name, message) ISR(name){ UNUSED(frame); printf(#message); HALT;}
 
 #define ISR_DRIVER(name) \
     extern void _##name(void);\
@@ -60,48 +61,82 @@ static void idt_load(struct IDTPtr *idt_ptr)
 
 ISR(isr_default)
 {
-    HLT;
+    HALT;
 }
 
-ISR_MSG(isr0, "[!] Exception 0: Division by zero\n");
-ISR_MSG(isr4,"[!] Exception 4: Overflow\n");
-ISR_MSG(isr5, "[!] Exception 5: Bound range exceded\n");
-ISR_MSG(isr6,"[!] Exception 6: Invalid opcode\n");
-ISR_MSG(isr7, "[!] Exception 7: Device not available\n");
-ISR_MSG(isr8, "[!] Exception 8: Double fault\n");
-ISR_MSG(isr13, "[!] Exception 13: General protection fault\n");
+ISR_MSG(isr0,  "[!] Exception 0: Division by zero\n");
+ISR_MSG(isr4,  "[!] Exception 4: Overflow\n");
+ISR_MSG(isr5,  "[!] Exception 5: Bound range exceded\n");
 
+
+// TODO: Impelment invalid opcode handler to show which opcode cause the fault and at which address
+// ISR_MSG(isr6,  "[!] Exception 6: Invalid opcode\n");
+
+ISRE(isr6)
+{
+    puts("[!] Exception 6: Invalid opcode");
+    printf("\tAddress: %x\n", errorCode);
+    HALT
+}
+
+ISR_MSG(isr7,  "[!] Exception 7: Device not available\n");
+ISR_MSG(isr8,  "[!] Exception 8: Double fault\n");
+
+ISRE(isr13) {
+    __asm__ __volatile__ ("cli");
+    console_clear();
+    puts("[!] Exception 13: General protection fault");
+    dump_regs();
+    uint32_t eip;
+    __asm__ __volatile__ ("movl -4(%%esp), %0" : "=r"(eip));
+    printf("eip = %x\n", eip);
+    printf("error code: %x\n", errorCode);
+    dump_pagetable();
+    HALT;
+}
+
+#define  PAGE_FAULT_PRESENT     0x01
+#define  PAGE_FAULT_WRITE       0x02
+#define  PAGE_FAULT_USER        0x04
+#define  PAGE_FAULT_RESERVED    0x08
+#define  PAGE_FAULT_FETCH       0x10
+#define  PAGE_FAULT_PROTECTION  0x20
+#define  PAGE_FAULT_SHADOW      0x40
+#define  PAGE_FAULT_SGX         0x80
+//  Page faults handler
 ISRE(isr14)
 {
     printf("[!] Exception 14 - Page fault - ");
-    if (errorCode & 0x1) {
+    if (errorCode & PAGE_FAULT_PRESENT) {
         printf("Page-protection violation ");
     } else {
         printf("Non-present page ");
     }
-    if (errorCode & 0x2) {
+    if (errorCode & PAGE_FAULT_WRITE) {
         printf("on page write ");
     } else {
         printf("on page read ");
     }
-    if (errorCode & 0x4) {
+    if (errorCode & PAGE_FAULT_USER) {
         printf("while CPL = 3 ");
     }
-    if (errorCode & 0x8) {
+    if (errorCode & PAGE_FAULT_RESERVED) {
         printf("caused by reading 1 in reserved field ");
     }
-    if (errorCode & 0x10) {
+    if (errorCode & PAGE_FAULT_FETCH) {
         printf("Caused by instructon fetch");
     }
-    uint32_t faultAddr;
-    // __asm__ __volatile__("movl %cr2, %eax");
+
+    // CR2 is set to the virtual address that caused the page fault
+    register uint32_t faultAddr;
     __asm__ __volatile__("movl %%cr2, %0" : "=r"(faultAddr));
     printf("\nAddress: %x\n", faultAddr);
-    HLT;
+    HALT;
 }
 
 ISR_DRIVER(isr_128);
 
+// Interrupt servicing system calls
 void isr_128(syscall_frame_t frame)
 {
     void (*apicall)(struct syscall_frame*) = syscalls[frame.eax];
@@ -110,6 +145,7 @@ void isr_128(syscall_frame_t frame)
 
 extern clock_t clock;
 
+// Interrupt servicing timer
 ISR_DRIVER(isr_timer);
 void isr_timer(syscall_frame_t frame)
 {
@@ -124,6 +160,7 @@ void isr_timer(syscall_frame_t frame)
     pic_ack(PIC1);
 }
 
+// Handler for keyboard interrupts
 ISR(isr_keyboard)
 {
     uint8_t scancode = inb(0x60);
@@ -144,12 +181,15 @@ static void idt_install()
     idt_load(&idtp);
 }
 
-static void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags)
+#define IDT_ENTRY_PRESENT 0x80
+
+static void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel,
+                         uint8_t gate_type, uint8_t dpl)
 {
-    idt[num].flags = flags;
+    idt[num].flags    = IDT_ENTRY_PRESENT | ((dpl & 0x3) << 5) | (gate_type & 0xf);
     idt[num].selector = sel;
-    idt[num].baseLo = (base & 0x0000ffff);
-    idt[num].baseHi = (base & 0xffff0000) >> 16;
+    idt[num].baseLo   = (base & 0x0000ffff);
+    idt[num].baseHi   = (base & 0xffff0000) >> 16;
 }
 
 static void* idt_get_gate(uint8_t num)
@@ -159,21 +199,37 @@ static void* idt_get_gate(uint8_t num)
     return (void*)ret;
 }
 
+#define  KERNEL_CODE_GDT_SELECTOR  0x8
+#define  GATE_TYPE_TASK            0x5
+#define  GATE_TYPE_16_INTERRUPT    0x6
+#define  GATE_TYPE_16_TRAP         0x7
+#define  GATE_TYPE_32_INTERRUPT    0xE
+#define  GATE_TYPE_32_TRAP         0xF
+
+ISR(isr_syscall) {
+    puts("[#] Kernel syscall");
+    HALT;
+}
+
 void idt_init()
 {
+    // Initialize all gates with generic handler
     for (int i = 0; i < 256; ++i) {
-        idt_set_gate(i, (uint32_t)isr_default,  0x8, 0x8e);
+        idt_set_gate(i, (uint32_t)isr_default,  KERNEL_CODE_GDT_SELECTOR, GATE_TYPE_32_INTERRUPT, 0);
     }
-    idt_set_gate(0,     (uint32_t)isr0,           0x8, 0x8e);
-    idt_set_gate(4,     (uint32_t)isr4,           0x8, 0x8e);
-    idt_set_gate(5,     (uint32_t)isr5,           0x8, 0x8e);
-    idt_set_gate(6,     (uint32_t)isr6,           0x8, 0x8e);
-    idt_set_gate(7,     (uint32_t)isr7,           0x8, 0x8e);
-    idt_set_gate(8,     (uint32_t)isr8,           0x8, 0x8e);
-    idt_set_gate(13,    (uint32_t)isr13,          0x8, 0x8e);
-    idt_set_gate(14,    (uint32_t)isr14,          0x8, 0x8e);
-    idt_set_gate(0x20,  (uint32_t)_isr_timer,      0x8, 0x8e);
-    idt_set_gate(0x21,  (uint32_t)isr_keyboard,   0x8, 0x8e);
-    idt_set_gate(0x80,  (uint32_t)_isr_128,       0x8, 0xee);
+
+    // Specific handlers
+    idt_set_gate(0,    (uint32_t)isr0,          KERNEL_CODE_GDT_SELECTOR, GATE_TYPE_32_INTERRUPT, 0);
+    idt_set_gate(4,    (uint32_t)isr4,          KERNEL_CODE_GDT_SELECTOR, GATE_TYPE_32_INTERRUPT, 0);
+    idt_set_gate(5,    (uint32_t)isr5,          KERNEL_CODE_GDT_SELECTOR, GATE_TYPE_32_INTERRUPT, 0);
+    idt_set_gate(6,    (uint32_t)isr6,          KERNEL_CODE_GDT_SELECTOR, GATE_TYPE_32_INTERRUPT, 0);
+    idt_set_gate(7,    (uint32_t)isr7,          KERNEL_CODE_GDT_SELECTOR, GATE_TYPE_32_INTERRUPT, 0);
+    idt_set_gate(8,    (uint32_t)isr8,          KERNEL_CODE_GDT_SELECTOR, GATE_TYPE_32_INTERRUPT, 0);
+    idt_set_gate(13,   (uint32_t)isr13,         KERNEL_CODE_GDT_SELECTOR, GATE_TYPE_32_INTERRUPT, 0);
+    idt_set_gate(14,   (uint32_t)isr14,         KERNEL_CODE_GDT_SELECTOR, GATE_TYPE_32_INTERRUPT, 0);
+    idt_set_gate(0x20, (uint32_t)_isr_timer,    KERNEL_CODE_GDT_SELECTOR, GATE_TYPE_32_INTERRUPT, 0);
+    idt_set_gate(0x21, (uint32_t)isr_keyboard,  KERNEL_CODE_GDT_SELECTOR, GATE_TYPE_32_INTERRUPT, 0);
+    idt_set_gate(0x80, (uint32_t)isr_syscall,   KERNEL_CODE_GDT_SELECTOR, GATE_TYPE_32_INTERRUPT, 3);
+
     idt_install();
 }
