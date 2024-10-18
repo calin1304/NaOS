@@ -26,4 +26,16 @@ void dump_regs()
     DUMP_REG_32("edi");
     DUMP_REG_32("esp");
     DUMP_REG_32("ebp");
+    DUMP_REG_32("cs");
+    DUMP_REG_32("ds");
+    DUMP_REG_32("ss");
+    DUMP_REG_32("fs");
+    DUMP_REG_32("gs");
+
+    __asm__ __volatile__ ("pushf\n\t"
+                          "pop %eax");
+    uint32_t eflags;
+    ASM_DUMP_REG_32("eax", eflags);
+    printf("eflags = %x\n", eflags);
+
 }
