@@ -40,7 +40,7 @@ clean:
 	$(MAKE) -C kernel clean
 
 run: kernel
-	qemu-system-i386 -kernel $(KERNEL)
+	qemu-system-i386 -kernel $(KERNEL) -initrd $(INITRD) -serial stdio
 	
 debug: kernel
 	qemu-system-i386 -s -S -kernel $(KERNEL)

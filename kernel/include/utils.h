@@ -11,6 +11,7 @@ int min(int, int);
 #define TEST_BIT(x, i) ((x) & (1 << (i)))
 
 #define LOG(format, ...) printf("[#] %s:%d (%s) : "format"\n", __FILE__, __LINE__, __func__, ##__VA_ARGS__);
+#define SLOG(format, ...) serial_printf(SERIAL_COM1, "[#] %s:%d (%s): "format"\n", __FILE__, __LINE__, __func__, ##__VA_ARGS__);
 
 unsigned int oct_to_dec(unsigned int oct);
 unsigned int stoi(const char *s);

@@ -12,6 +12,8 @@
 #include <process/process.h>
 #include "multiboot.h"
 #include <fs/tar.h>
+#include <elf.h>
+#include <drivers/serial.h>
 
 #include "libk/stdio.h"
 #include "libk/stdlib.h"
@@ -173,7 +175,8 @@ void kmain(multiboot_info_t *mbt, unsigned int magic)
     // Make a NULL stack frame to signal backtrace to stop
     __asm__ __volatile__("movl $0, -4(%ebp)");
 
-    // Initializing the PIT. The oscillator used runs at roughly 1.193182 MHz.
+    // Initialize serial logging which QEMU writes at stdout or in a file
+    serial_init(SERIAL_COM1, 38400);
     uint16_t count = PIT_FREQ / 100;
     // Set PIT channel 0 to square wave generator
     outb(PIT_PORT_CONTROL, PIT_ACCESS_LO_HI | PIT_MODE_SQUARE_WAVE);

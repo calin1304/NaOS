@@ -2,65 +2,68 @@
 
 #include <stdint.h>
 #include <stdarg.h>
+#include <utils.h>
 
 #include "io.h"
 
-void serialPortInit(SerialPort *r, int com, int baudRate)
+#define SERIAL_DATA_PORT(base)              (base)
+#define SERIAL_FIFO_COMMAND_PORT(base)      (base+2)
+#define SERIAL_LINE_COMMAND_PORT(base)      (base+3)
+#define SERIAL_MODEM_COMMAND_PORT(base)     (base+4)
+#define SERIAL_LINE_STATUS_PORT(base)       (base+5)
+
+#define SERIAL_LINE_DLAB 0x80
+
+#define SERIAL_CLOCK 115200
+
+void serial_init(uint16_t port, uint16_t baudRate)
 {
-    r->com = com;
-    serialPortSetBaudRate(r, baudRate);
-    serialPortConfigureLine(r);
+    uint16_t divisor = SERIAL_CLOCK / baudRate;
+    outb(port + 1, 0x00); // Disable interrupts
+    // Enable divisor latch access bit to write divisor to ports
+    outb(SERIAL_LINE_COMMAND_PORT(port), SERIAL_LINE_DLAB);
+    // Write lo and hi bytes of divisor
+    outb(port + 0, divisor && 0xff);
+    outb(port + 1, (divisor >> 8) && 0xff);
+    // 8 bits, 1 stop bit, no parity
+    outb(SERIAL_LINE_COMMAND_PORT(port), 0x03);
+    // Enable FIFO, clear them, 14 bytes before available data interrupt
+    outb(SERIAL_FIFO_COMMAND_PORT(port), 0xC7);
+    // RTS/DSR set
+    outb(SERIAL_MODEM_COMMAND_PORT(port), 0x0B);
 }
 
-void serialPortSetBaudRate(SerialPort *r, int rate)
+void serial_write_byte(uint16_t port, uint8_t c)
 {
-    short divisor = SERIAL_CLOCK/rate;
-    outb(SERIAL_LINE_COMMAND_PORT(r->com), SERIAL_LINE_ENABLE_DLAB);
-    outb(SERIAL_DATA_PORT(r->com), (divisor >> 8) & 0x00FF);
-    outb(SERIAL_DATA_PORT(r->com), divisor & 0x00FF);
+    outb(SERIAL_DATA_PORT(port), c);
 }
 
-void serialPortConfigureLine(SerialPort *r)
+void serial_write_bytes(uint16_t port, uint8_t *s, int count)
 {
-    outb(SERIAL_LINE_COMMAND_PORT(r->com), 0x03);
-    outb(SERIAL_FIFO_COMMAND_PORT(r->com), 0xC7);
-    outb(SERIAL_MODEM_COMMAND_PORT(r->com), 0x03);
-}
-
-void serialPortWriteByte(SerialPort *r, uint8_t c)
-{
-    outb(SERIAL_DATA_PORT(r->com), c);
-}
-
-void serialPortWriteBytes(SerialPort *r, uint8_t *s, int count)
-{
-    while (count) {
-        serialPortWriteByte(r, *s);
-        count -= 1;
-        s += 1;
+    for (; count > 0; --count, ++s) {
+        serial_write_byte(port, *s);
     }
 }
 
-void serialPortWriteString(SerialPort *r, const char *s)
+void serial_write_string(uint16_t port, const char *s)
 {
-    while (*s) {
-        serialPortWriteByte(r, *s);
-        s += 1;
+    for (; *s != '\0'; ++s) {
+        serial_write_byte(port, *s);
     }
 }
 
-void serialPortWriteStringNL(SerialPort *r, const char *s)
+void serial_write_stringNL(uint16_t port, const char *s)
 {
-    serialPortWriteString(r, s);
-    serialPortWriteByte(r, '\n');
+    serial_write_string(port, s);
+    serial_write_byte(port, '\n');
 }
 
-void serialPortPrintf(SerialPort *r, const char *format, ...)
+void serial_printf(uint16_t port, const char *format, ...)
 {
     char out[100];
     va_list args;
     va_start(args, format);
     vsprintf(out, format, args); //FIXME: Use vsnprintf
-    serialPortWriteString(r, out);
+    serial_write_string(port, out);
     va_end(args);
 }
