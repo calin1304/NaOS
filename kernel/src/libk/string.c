@@ -1,6 +1,7 @@
 #include "libk/string.h"
 
 #include <stdint.h>
+#include <libk/stdlib.h>
 
 void* memcpy(void *dst, void *src, size_t num)
 {
@@ -121,3 +122,13 @@ char* strtok(char *s, const char *delims)
     return currPos;
 }
 
+void strrev(char *s)
+{
+    assert(s != NULL);
+    size_t j = strlen(s) - 1;
+    for (size_t i = 0; i < j; ++i, --j) {
+        char c = s[i];
+        s[i] = s[j];
+        s[j] = c;
+    }
+}
