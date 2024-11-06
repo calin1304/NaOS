@@ -11,7 +11,7 @@ INCLUDE_DIR := include
 SRCDIR := src
 OBJ_DIR := _build
 
-SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
+SOURCES := $(shell git ls-files -c '$(SRCDIR)/*.c')
 OBJECTS := $(patsubst $(SRCDIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 OBJ_DIRS := $(sort $(dir $(OBJECTS)))
 

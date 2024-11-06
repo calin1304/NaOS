@@ -12,7 +12,7 @@ void init_scheduler()
 {
 }
 
-void switch_process(uint32_t *task_eip, syscall_frame_t *frame)
+static void switch_process(uint32_t *task_eip, syscall_frame_t *frame)
 {
     if (!is_started) {
         return;

@@ -17,11 +17,11 @@ export CFLAGS := \
 	-mgeneral-regs-only \
 	-Ikernel/include
 
-KERNEL := kernel/ker.bin
+KERNEL := kernel/_build/kernel.elf
 ISODIR := isodir
 
-.PHONY: all iso initrd kernel install-headers clean
-all: kernel initrd iso
+.PHONY: all iso initrd kernel install-headers clean run
+all: kernel
 
 iso:
 	cp -f $(KERNEL) $(ISODIR)/boot/
@@ -30,7 +30,7 @@ iso:
 initrd:
 	tar -c -f $(ISODIR)/boot/naos.initrd initrd/*
 
-kernel:
+kernel: $(kernel)
 	$(MAKE) -C kernel
 
 install-headers:
@@ -39,3 +39,8 @@ install-headers:
 clean:
 	$(MAKE) -C kernel clean
 
+run: kernel
+	qemu-system-i386 -kernel $(KERNEL)
+	
+debug: kernel
+	qemu-system-i386 -s -S -kernel $(KERNEL)
