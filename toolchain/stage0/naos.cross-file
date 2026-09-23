@@ -1,0 +1,15 @@
+[binaries]
+c = 'i386-unknown-naos-gcc'
+cpp = 'i386-unknown-naos-g++'
+ar = 'i386-unknown-naos-ar'
+strip = 'i386-unknown-naos-strip'
+ld = 'i386-unknown-naos-ld'
+
+[host_machine]
+system = 'naos'
+cpu_family = 'x86'
+cpu = 'i386'
+endian = 'little'
+
+[properties]
+skip_sanity_check = true
