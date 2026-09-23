@@ -2718,14 +2718,16 @@ index 00000000..b9a8a691
 +}
 diff --git a/sysdeps/naos/sysdeps.cpp b/sysdeps/naos/sysdeps.cpp
 new file mode 100644
-index 00000000..722421ff
+index 00000000..72c21dcf
 --- /dev/null
 +++ b/sysdeps/naos/sysdeps.cpp
-@@ -0,0 +1,162 @@
+@@ -0,0 +1,441 @@
 +#include "mlibc/tcb.hpp"
 +#include <abi-bits/errno.h>
 +#include <abi-bits/signal.h>
 +#include <abi-bits/stat.h>
++#include <abi-bits/uid_t.h>
++#include <abi-bits/gid_t.h>
 +#include <bits/ensure.h>
 +#include <bits/syscall.h>
 +#include <mlibc/all-sysdeps.hpp>
@@ -2882,5 +2884,282 @@ index 00000000..722421ff
 +int Sysdeps<PrepareStack>::operator()(void**, void*, void*, void*, unsigned long*, unsigned long*, void**) {
 +	STUB();
 +}
++
++// For porting LUA
++
++int Sysdeps<Access>::operator()(char const*, int) {
++	STUB();
++}
++int Sysdeps<Chdir>::operator()(char const*) {
++	STUB();
++}
++int Sysdeps<Chmod>::operator()(char const*, unsigned int) {
++	STUB();
++}
++int Sysdeps<ClockGetres>::operator()(int, long long*, long*) {
++	STUB();
++}
++int Sysdeps<ClockSet>::operator()(int, long long, long) {
++	STUB();
++}
++int Sysdeps<Dup2>::operator()(int, int, int) {
++	STUB();
++}
++int Sysdeps<Dup>::operator()(int, int, int*) {
++	STUB();
++}
++int Sysdeps<Faccessat>::operator()(int, char const*, int, int) {
++	STUB();
++}
++int Sysdeps<Fadvise>::operator()(int, long long, long long, int) {
++	STUB();
++}
++int Sysdeps<Fallocate>::operator()(int, long long, unsigned long) {
++	STUB();
++}
++int Sysdeps<Fchdir>::operator()(int) {
++	STUB();
++}
++int Sysdeps<Fchmodat>::operator()(int, char const*, unsigned int, int) {
++	STUB();
++}
++int Sysdeps<Fchmod>::operator()(int, unsigned int) {
++	STUB();
++}
++int Sysdeps<Fchownat>::operator()(int, char const*, unsigned int, unsigned int, int) {
++	STUB();
++}
++int Sysdeps<Fcntl>::operator()(int, int, char*, int*) {
++	STUB();
++}
++int Sysdeps<Fdatasync>::operator()(int) {
++	STUB();
++}
++int Sysdeps<Fexecve>::operator()(int, char* const*, char* const*) {
++	STUB();
++}
++int Sysdeps<Fsync>::operator()(int) {
++	STUB();
++}
++int Sysdeps<Ftruncate>::operator()(int, unsigned long) {
++	STUB();
++}
++int Sysdeps<GetCwd>::operator()(char*, unsigned long) {
++	STUB();
++}
++gid_t Sysdeps<GetEgid>::operator()() {
++	STUB();
++}
++int Sysdeps<GetEntropy>::operator()(void*, unsigned long) {
++	STUB();
++}
++uid_t Sysdeps<GetEuid>::operator()() {
++	STUB();
++}
++gid_t Sysdeps<GetGid>::operator()() {
++	STUB();
++}
++int Sysdeps<GetGroups>::operator()(unsigned long, unsigned int*, int*) {
++	STUB();
++}
++int Sysdeps<GetHostname>::operator()(char*, unsigned long) {
++	STUB();
++}
++int Sysdeps<GetLoginR>::operator()(char*, unsigned long) {
++	STUB();
++}
++int Sysdeps<GetPgid>::operator()(int, int*) {
++	STUB();
++}
++int Sysdeps<GetPpid>::operator()() {
++	STUB();
++}
++int Sysdeps<GetResgid>::operator()(unsigned int*, unsigned int*, unsigned int*) {
++	STUB();
++}
++int Sysdeps<GetResuid>::operator()(unsigned int*, unsigned int*, unsigned int*) {
++	STUB();
++}
++int Sysdeps<GetSid>::operator()(int, int*) {
++	STUB();
++}
++int Sysdeps<GetTid>::operator()() {
++	STUB();
++}
++uid_t Sysdeps<GetUid>::operator()() {
++	STUB();
++}
++int Sysdeps<Ioctl>::operator()(int, unsigned long, void*, int*) {
++	STUB();
++}
++int Sysdeps<Linkat>::operator()(int, char const*, int, char const*, int) {
++	STUB();
++}
++int Sysdeps<Link>::operator()(char const*, char const*) {
++	STUB();
++}
++int Sysdeps<Mkdirat>::operator()(int, char const*, unsigned int) {
++	STUB();
++}
++int Sysdeps<Mkdir>::operator()(char const*, unsigned int) {
++	STUB();
++}
++int Sysdeps<Mkfifoat>::operator()(int, char const*, unsigned int) {
++	STUB();
++}
++int Sysdeps<Mknodat>::operator()(int, char const*, int, int) {
++	STUB();
++}
++int Sysdeps<Nice>::operator()(int, int*) {
++	STUB();
++}
++int Sysdeps<Openat>::operator()(int, char const*, int, unsigned int, int*) {
++	STUB();
++}
++int Sysdeps<Pause>::operator()() {
++	STUB();
++}
++int Sysdeps<Pipe>::operator()(int*, int) {
++	STUB();
++}
++int Sysdeps<Pread>::operator()(int, void*, unsigned long, long long, int*) {
++	STUB();
++}
++int Sysdeps<Ptsname>::operator()(int, char*, unsigned long) {
++	STUB();
++}
++int Sysdeps<Pwrite>::operator()(int, void const*, unsigned long, long long, int*) {
++	STUB();
++}
++int Sysdeps<Readlinkat>::operator()(int, char const*, void*, unsigned long, int*) {
++	STUB();
++}
++int Sysdeps<Readlink>::operator()(char const*, void*, unsigned long, int*) {
++	STUB();
++}
++int Sysdeps<Renameat>::operator()(int, char const*, int, char const*) {
++	STUB();
++}
++int Sysdeps<SetEgid>::operator()(unsigned int) {
++	STUB();
++}
++int Sysdeps<SetEuid>::operator()(unsigned int) {
++	STUB();
++}
++int Sysdeps<SetGid>::operator()(unsigned int) {
++	STUB();
++}
++int Sysdeps<SetHostname>::operator()(char const*, unsigned long) {
++	STUB();
++}
++int Sysdeps<SetItimer>::operator()(int, itimerval const*, itimerval*) {
++	STUB();
++}
++int Sysdeps<SetPgid>::operator()(int, int) {
++	STUB();
++}
++int Sysdeps<SetRegid>::operator()(unsigned int, unsigned int) {
++	STUB();
++}
++int Sysdeps<SetResgid>::operator()(unsigned int, unsigned int, unsigned int) {
++	STUB();
++}
++int Sysdeps<SetResuid>::operator()(unsigned int, unsigned int, unsigned int) {
++	STUB();
++}
++int Sysdeps<SetReuid>::operator()(unsigned int, unsigned int) {
++	STUB();
++}
++int Sysdeps<SetSid>::operator()(int*) {
++	STUB();
++}
++int Sysdeps<SetUid>::operator()(unsigned int) {
++	STUB();
++}
++int Sysdeps<Sigaltstack>::operator()(__stack const*, __stack*) {
++	STUB();
++}
++int Sysdeps<Sigpending>::operator()(sigset_t*) {
++	STUB();
++}
++int Sysdeps<Sigqueue>::operator()(int, int, sigval) {
++	STUB();
++}
++int Sysdeps<Sigsuspend>::operator()(sigset_t const*) {
++	STUB();
++}
++int Sysdeps<Sigtimedwait>::operator()(sigset_t const*, siginfo_t*, timespec const*, int*) {
++	STUB();
++}
++int Sysdeps<Sleep>::operator()(long long*, long*) {
++	STUB();
++}
++int Sysdeps<Symlinkat>::operator()(char const*, int, char const*) {
++	STUB();
++}
++int Sysdeps<Symlink>::operator()(char const*, char const*) {
++	STUB();
++}
++void Sysdeps<Sync>::operator()() {
++	STUB();
++}
++int Sysdeps<Sysconf>::operator()(int, long*) {
++	STUB();
++}
++int Sysdeps<Tcdrain>::operator()(int) {
++	STUB();
++}
++int Sysdeps<Tcflow>::operator()(int, int) {
++	STUB();
++}
++int Sysdeps<Tcflush>::operator()(int, int) {
++	STUB();
++}
++int Sysdeps<Tcgetattr>::operator()(int, termios*) {
++	STUB();
++}
++int Sysdeps<Tcgetwinsize>::operator()(int, winsize*) {
++	STUB();
++}
++int Sysdeps<Tcsendbreak>::operator()(int, int) {
++	STUB();
++}
++int Sysdeps<Tcsetattr>::operator()(int, int, termios const*) {
++	STUB();
++}
++int Sysdeps<Tcsetwinsize>::operator()(int, winsize const*) {
++	STUB();
++}
++int Sysdeps<Tgkill>::operator()(int, int, int) {
++	STUB();
++}
++int Sysdeps<TimerCreate>::operator()(int, sigevent*, void**) {
++	STUB();
++}
++int Sysdeps<TimerDelete>::operator()(void*) {
++	STUB();
++}
++int Sysdeps<TimerGettime>::operator()(void*, itimerspec*) {
++	STUB();
++}
++int Sysdeps<TimerSettime>::operator()(void*, int, itimerspec const*, itimerspec*) {
++	STUB();
++}
++int Sysdeps<Truncate>::operator()(char const*, long long) {
++	STUB();
++}
++int Sysdeps<Ttyname>::operator()(int, char*, unsigned long) {
++	STUB();
++}
++int Sysdeps<Umask>::operator()(unsigned int, unsigned int*) {
++	STUB();
++}
++int Sysdeps<Unlockpt>::operator()(int) {
++	STUB();
++}
++int Sysdeps<Utimensat>::operator()(int, char const*, timespec const*, int) {
++	STUB();
++}
++
 +
 +} // namespace mlibc
